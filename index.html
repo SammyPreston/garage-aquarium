@@ -1885,7 +1885,7 @@ async function sendOrder() {
           note: note || '',
           items: lines,
           total: total,
-          status: 'new',
+          status: 'pending',
           createdAt: new Date().toISOString(),
           uid: fbAuth && fbAuth.currentUser ? fbAuth.currentUser.uid : 'guest',
           email: _userEmail
@@ -4603,9 +4603,13 @@ function buildOrderCard(d) {
   };
   var st = statusMap[status] || statusMap.pending;
   var date = d.createdAt ? new Date(d.createdAt).toLocaleString("ru-RU", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}) : (d.date || "");
-  var items = (d.items || "").split(",").map(function(x) {
-    return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">\u2022 ' + x.trim() + '</div>';
-  }).join("");
+  var itemsArr = Array.isArray(d.items)
+  ? d.items
+  : String(d.items || "").split(",");
+
+var items = itemsArr.map(function(x) {
+  return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">• ' + String(x).trim() + '</div>';
+}).join("");
 
   var actionBtns = "";
   if (status !== "working")   actionBtns += '<button onclick="updateOrderStatus(\'' + d._id + '\',\'working\')" style="' + btnStyle("#4fc3f7") + '">\u23f3 In progress</button>';
@@ -4683,9 +4687,13 @@ function renderOrdersList(list, orders) {
   var html = '<p style="font-size:11px;color:#4a6a8a;margin-bottom:10px">' + orders.length + ' order(s)</p>';
   html += orders.map(function(o) {
     var st = statusMap[o.status || "pending"] || statusMap.pending;
-    var items = (o.items || "").split(",").map(function(x) {
-      return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">\u2022 ' + x.trim() + '</div>';
-    }).join("");
+    var itemsArr = Array.isArray(o.items)
+  ? o.items
+  : String(o.items || "").split(",");
+
+var items = itemsArr.map(function(x) {
+  return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">• ' + String(x).trim() + '</div>';
+}).join("");
     return '<div style="background:#111e33;border:1px solid rgba(79,195,247,.1);border-radius:10px;padding:12px;margin-bottom:8px">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
       +   '<div style="font-size:10px;color:#4a6a8a">' + (o.date || "") + '</div>'
