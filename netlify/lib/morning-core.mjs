@@ -33,27 +33,30 @@ function val(v) {
   return null;
 }
 
+// Читаем ТОЛЬКО заказы с галочкой remind == true (runQuery), а не всю коллекцию:
+// так утренний отчёт тратит единицы чтений Firestore, а не сотни.
 export async function loadOrders() {
-  const out = [];
-  let token = "";
-  for (let guard = 0; guard < 50; guard++) {
-    const u = new URL(`https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/orders`);
-    u.searchParams.set("key", API_KEY);
-    u.searchParams.set("pageSize", "300");
-    for (const f of FIELDS) u.searchParams.append("mask.fieldPaths", f);
-    if (token) u.searchParams.set("pageToken", token);
-    const r = await fetch(u);
-    if (!r.ok) throw new Error("Firestore " + r.status + ": " + (await r.text()).slice(0, 300));
-    const j = await r.json();
-    const docs = Array.isArray(j.documents) ? j.documents : [];
-    for (const d of docs) {
-      const o = {};
-      const f = (d && d.fields) || {};
-      for (const k of Object.keys(f)) o[k] = val(f[k]);
-      out.push(o);
+  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: "orders" }],
+      where: { fieldFilter: { field: { fieldPath: "remind" }, op: "EQUAL", value: { booleanValue: true } } },
+      select: { fields: FIELDS.map(f => ({ fieldPath: f })) },
+      limit: 500
     }
-    if (!j.nextPageToken) break;
-    token = j.nextPageToken;
+  };
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error("Firestore " + r.status + ": " + (await r.text()).slice(0, 300));
+  const j = await r.json();
+  const rows = Array.isArray(j) ? j : [];
+  const out = [];
+  for (const row of rows) {
+    const d = row && row.document;
+    if (!d) continue;
+    const o = {};
+    const f = (d && d.fields) || {};
+    for (const k of Object.keys(f)) o[k] = val(f[k]);
+    out.push(o);
   }
   return out;
 }
