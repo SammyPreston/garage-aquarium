@@ -3499,6 +3499,7 @@ function renderStockPanel() {
     var keys = Object.keys(summary).sort();
     // Кэш для расшифровки продаж по клику (обращаемся по индексу — без кавычек в onclick)
     window._stockSummary = summary;
+    window._stockInvoices = invoices; // для расшифровки прихода по клику
     window._stockKeys = keys;
 
     var summaryHtml = '';
@@ -3527,7 +3528,9 @@ function renderStockPanel() {
           + '<td style="padding:5px 3px;color:#e8f4fd" title="' + String(name).replace(/"/g, '&quot;') + '">' + gaShortName(name)
           + (s._cardId ? '' : ' <span style="color:#ff5252;font-size:10px;white-space:nowrap" title="Нет совпадения с карточкой товара — остаток на витрину не попадает">&#9888; нет карточки</span>')
           + '</td>'
-          + '<td style="text-align:center;padding:5px 3px;color:#7a9bbf">' + s.incoming + '</td>'
+          + '<td style="text-align:center;padding:5px 3px">'
+          +   '<button onclick="openIncomingModal(' + _ki + ')" title="Откуда пришло (инвойсы)" style="background:none;border:none;border-bottom:1px dashed rgba(129,199,132,.6);color:#81c784;font-size:11px;font-family:DM Sans,sans-serif;cursor:pointer;padding:0 2px">' + s.incoming + '</button>'
+          + '</td>'
           + '<td style="text-align:center;padding:5px 3px">'
           +   '<button onclick="gaWriteOff(' + _ki + ')" title="Списать потери" style="background:none;border:1px dashed rgba(255,138,101,.5);border-radius:5px;color:#ff8a65;cursor:pointer;font-size:11px;padding:1px 7px">' + (s.writeoff || 0) + ' &minus;</button>'
           + '</td>'
@@ -3600,6 +3603,107 @@ function renderStockPanel() {
 
 // Расшифровка: кому и когда продана позиция (только завершённые заказы —
 // ровно то, что вычитается из остатка).
+// Расшифровка прихода: какие инвойсы (и инвентаризации) дали приход по позиции.
+function openIncomingModal(idx) {
+  var keys = window._stockKeys || [];
+  var summary = window._stockSummary || {};
+  var name = keys[idx];
+  if (!name || !summary[name]) { showToast("Нет данных по позиции"); return; }
+  var s = summary[name];
+  var invs = Array.isArray(window._stockInvoices) ? window._stockInvoices : [];
+  var esc = function(t) {
+    return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  };
+  var fid = (s.fishId !== undefined && s.fishId !== null) ? String(s.fishId) : "";
+  var lines = [];
+  invs.forEach(function(inv) {
+    if (!inv || !Array.isArray(inv.items)) return;
+    inv.items.forEach(function(it) {
+      if (!it) return;
+      var nm = it.fishName || it.name || "";
+      var same = (fid && it.fishId !== undefined && it.fishId !== null && String(it.fishId) === fid) || (nm && nm === name);
+      if (!same) return;
+      lines.push({
+        date: inv.invoiceDate || inv.date || "",
+        qty: Number(it.qty) || 0,
+        bp: Number(it.buyPrice) || 0,
+        inv: !!inv.inventoryAdjust,
+        note: inv.note || ""
+      });
+    });
+  });
+  lines.sort(function(a, b) { return String(b.date).localeCompare(String(a.date)); });
+  var fmt = function(d) {
+    var d0 = new Date(d);
+    return isNaN(d0.getTime()) ? "—" : d0.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+  };
+  var totQty = 0, totSum = 0, rows = "";
+  lines.forEach(function(l) {
+    totQty += l.qty; totSum += l.qty * l.bp;
+    rows += '<tr style="border-bottom:1px solid rgba(255,255,255,.05)">'
+      + '<td style="padding:6px 4px;color:#7a9bbf;font-size:11px;white-space:nowrap">' + fmt(l.date) + '</td>'
+      + '<td style="padding:6px 4px;color:#e8f4fd;font-size:11px">' + (l.inv ? '&#128203; Инвентаризация' : '&#128230; Инвойс') + '</td>'
+      + '<td style="padding:6px 4px;text-align:center;color:' + (l.qty < 0 ? '#ff8a65' : '#81c784') + ';font-size:11px;font-weight:600;white-space:nowrap">' + (l.qty > 0 ? '+' : '') + l.qty + ' шт</td>'
+      + '<td style="padding:6px 4px;text-align:right;color:#ffd54f;font-size:11px;white-space:nowrap">' + (l.bp > 0 ? (l.qty * l.bp) + ' MDL' : '—') + '</td>'
+      + '</tr>';
+  });
+  if (!rows) rows = '<tr><td colspan="4" style="padding:14px;text-align:center;color:#7a9bbf;font-size:11px">Инвойсы по этой позиции не найдены</td></tr>';
+
+  // Продажи раньше первого прихода — частая причина «продано больше, чем пришло»
+  var firstIn = "";
+  lines.forEach(function(l) { if (!l.inv && l.date && (!firstIn || l.date < firstIn)) firstIn = l.date; });
+  var soldBefore = 0;
+  if (firstIn && Array.isArray(s.sales)) {
+    s.sales.forEach(function(v) { if (v && v.date && String(v.date) < firstIn) soldBefore += (Number(v.qty) || 0); });
+  }
+  var wo = s.writeoff || 0;
+  var remRaw = (s.incoming || 0) - (s.sold || 0) - wo;
+  var hint = "";
+  if (remRaw < 0) {
+    hint = '<div style="font-size:11px;color:#ffd54f;background:rgba(255,213,79,.08);border:1px solid rgba(255,213,79,.25);border-radius:6px;padding:7px 8px;margin-bottom:10px">'
+      + '&#9888; Продано и списано больше, чем пришло по инвойсам (на ' + (-remRaw) + ' шт), поэтому остаток 0.'
+      + (soldBefore > 0 ? '<br>Из проданного <b>' + soldBefore + ' шт</b> — до первого инвойса (' + fmt(firstIn) + '), то есть из старого запаса без инвойса.' : '')
+      + '<br>Чтобы остаток стал верным, откройте <b>Инвентаризация</b> и укажите, сколько рыбок сейчас есть на самом деле.</div>';
+  }
+
+  var ex = document.getElementById("incoming-modal");
+  if (ex) ex.remove();
+  var modal = document.createElement("div");
+  modal.id = "incoming-modal";
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem";
+  var box = function(label, val, color, bg) {
+    return '<div style="flex:1;background:' + bg + ';border-radius:8px;padding:7px;text-align:center"><div style="font-size:10px;color:#7a9bbf">' + label + '</div><div style="font-size:14px;font-weight:700;color:' + color + '">' + val + '</div></div>';
+  };
+  modal.innerHTML =
+    '<div style="background:#111e33;border:1px solid rgba(129,199,132,.3);border-radius:16px;width:100%;max-width:460px;max-height:86vh;overflow-y:auto;padding:1.4rem;position:relative">'
+    + '<button onclick="document.getElementById(&quot;incoming-modal&quot;).remove()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:#7a9bbf;font-size:20px;cursor:pointer">&times;</button>'
+    + '<h3 style="color:#81c784;margin-bottom:2px;font-size:15px">&#128230; Откуда пришло</h3>'
+    + '<p style="font-size:12px;color:#e8f4fd;font-weight:600;margin-bottom:8px">' + esc(typeof gaShortName === "function" ? gaShortName(name) : name) + '</p>'
+    + '<div style="display:flex;gap:6px;margin-bottom:12px">'
+    +   box('Приход', s.incoming || 0, '#81c784', 'rgba(129,199,132,.1)')
+    +   box('Продано', s.sold || 0, '#ff8a65', 'rgba(255,138,101,.1)')
+    +   box('Списано', wo, '#ff8a65', 'rgba(255,138,101,.06)')
+    +   box('Остаток', Math.max(0, remRaw), '#4fc3f7', 'rgba(79,195,247,.1)')
+    + '</div>'
+    + hint
+    + '<table style="width:100%;border-collapse:collapse">'
+    +   '<thead><tr style="color:#4a6a8a;border-bottom:1px solid rgba(255,255,255,.1)">'
+    +     '<th style="text-align:left;padding:4px;font-size:10px;font-weight:500">Дата</th>'
+    +     '<th style="text-align:left;padding:4px;font-size:10px;font-weight:500">Документ</th>'
+    +     '<th style="text-align:center;padding:4px;font-size:10px;font-weight:500">Кол-во</th>'
+    +     '<th style="text-align:right;padding:4px;font-size:10px;font-weight:500">Закупка</th>'
+    +   '</tr></thead><tbody>' + rows + '</tbody>'
+    +   (lines.length ? '<tfoot><tr style="border-top:1px solid rgba(129,199,132,.25)">'
+        + '<td colspan="2" style="padding:7px 4px;font-size:11px;color:#7a9bbf">Итого за ' + lines.length + ' док.</td>'
+        + '<td style="padding:7px 4px;text-align:center;font-size:12px;font-weight:700;color:#81c784">' + totQty + ' шт</td>'
+        + '<td style="padding:7px 4px;text-align:right;font-size:12px;font-weight:700;color:#ffd54f">' + totSum + ' MDL</td>'
+        + '</tr></tfoot>' : '')
+    + '</table>'
+    + '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener("click", function(e) { if (e.target === modal) modal.remove(); });
+}
+
 function openSalesModal(idx) {
   var keys = window._stockKeys || [];
   var summary = window._stockSummary || {};
