@@ -3422,11 +3422,37 @@ function gaWriteOff(ki) {
   });
 }
 
+// ── Кэш заказов для админки ──
+// Одна подписка на коллекцию orders: первая загрузка читает все заказы один раз,
+// дальше Firestore присылает только изменения (новый заказ, смена статуса и т.п.).
+// Вкладки админки (заказы, склад, статистика, клиенты, подарки) берут данные отсюда,
+// а не скачивают все заказы заново при каждом клике. Запускается только из админки.
+var _gaOrdersSnap = null, _gaOrdersWait = [], _gaOrdersUnsub = null, _gaOrdersFailed = false;
+function gaOrdersAll() {
+  if (!fbDb) return Promise.resolve({ docs: [], empty: true, size: 0, forEach: function(){} });
+  if (_gaOrdersFailed) return fbDb.collection("orders").get();
+  if (_gaOrdersSnap) return Promise.resolve(_gaOrdersSnap);
+  return new Promise(function(resolve, reject) {
+    _gaOrdersWait.push({ ok: resolve, err: reject });
+    if (_gaOrdersUnsub) return;
+    _gaOrdersUnsub = fbDb.collection("orders").onSnapshot(function(snap) {
+      _gaOrdersSnap = snap;
+      var w = _gaOrdersWait; _gaOrdersWait = [];
+      w.forEach(function(x) { x.ok(snap); });
+    }, function(err) {
+      // подписка не удалась — возвращаемся к обычной загрузке, как раньше
+      _gaOrdersFailed = true; _gaOrdersSnap = null; _gaOrdersUnsub = null;
+      var w = _gaOrdersWait; _gaOrdersWait = [];
+      w.forEach(function(x) { fbDb.collection("orders").get().then(x.ok, x.err); });
+    });
+  });
+}
+
 function syncStockFromLedger() {
   if (!fbDb) return Promise.resolve(null);
   return Promise.all([
     fbDb.collection('invoices').orderBy('date','desc').get().catch(function(){ return {docs:[]}; }),
-    fbDb.collection('orders').get().catch(function(){ return {docs:[]}; }),
+    gaOrdersAll().catch(function(){ return {docs:[]}; }),
     fbDb.collection('writeoffs').get().catch(function(){ return {docs:[]}; }),
     fbDb.collection('stock').get().catch(function(){ return {docs:[]}; })
   ]).then(function(res) {
@@ -3457,7 +3483,7 @@ function renderStockPanel() {
 
   return Promise.all([
     fbDb.collection('invoices').orderBy('date','desc').get().catch(function(){ return {docs:[]}; }),
-    fbDb.collection('orders').get().catch(function(){ return {docs:[]}; }),
+    gaOrdersAll().catch(function(){ return {docs:[]}; }),
     fbDb.collection('writeoffs').get().catch(function(){ return {docs:[]}; }),
     fbDb.collection('stock').get().catch(function(){ return {docs:[]}; })
   ]).then(function(res) {
@@ -3811,7 +3837,7 @@ function saveInventory() {
     // формула давала ровно фактическое количество.
     Promise.all([
       fbDb.collection('invoices').orderBy('date','desc').get().catch(function(){ return {docs:[]}; }),
-      fbDb.collection('orders').get().catch(function(){ return {docs:[]}; })
+      gaOrdersAll().catch(function(){ return {docs:[]}; })
     ]).then(function(res) {
       var invoices = res[0].docs.map(function(d){ return Object.assign({_id: d.id}, d.data()); });
       var orders   = res[1].docs.map(function(d){ return d.data(); });
@@ -5631,7 +5657,7 @@ function renderAdminStats() {
   wrap.innerHTML = '<p style="color:#7a9bbf;font-size:12px;text-align:center;padding:1rem">&#9203; Загрузка...</p>';
 
   Promise.all([
-    fbDb.collection("orders").get(),
+    gaOrdersAll(),
     fbDb.collection("invoices").get().catch(function(){ return { docs: [] }; })
   ]).then(function(_res) {
     var snap = _res[0];
@@ -6336,7 +6362,7 @@ function renderClientsTable() {
     }, 4000);
     Promise.all([
       fbDb.collection("users").orderBy("createdAt", "desc").get(),
-      fbDb.collection("orders").get().catch(function(){ return {docs:[]}; })
+      gaOrdersAll().catch(function(){ return {docs:[]}; })
     ]).then(function(results) {
       clearTimeout(_clientsTimeout);
         var snapshot = results[0];
@@ -7856,12 +7882,8 @@ function renderAdminOrders() {
 
   if (!fbDb) { renderAdminOrdersLocal(wrap); return; }
 
-  // Быстрая загрузка: все активные (pending/working) + последние 100 заказов (как раньше).
-  // Не качаем всю историю (~400 заказов) при каждом нажатии «Complete».
-  Promise.all([
-    fbDb.collection("orders").where("status", "in", ["pending", "working"]).get(),
-    fbDb.collection("orders").orderBy("createdAt", "desc").limit(100).get()
-  ])
+  // Заказы из общего кэша админки (gaOrdersAll): все активные + последние 100 завершённых.
+  Promise.all([gaOrdersAll()])
     .then(function(res) {
       var seen = {};
       var active = [], done = [];
@@ -7883,6 +7905,7 @@ function renderAdminOrders() {
       var _ts = function(o) { var dt = (typeof parseOrderDate === "function") ? parseOrderDate(o) : null; return dt ? dt.getTime() : 0; };
       active.sort(function(a, b) { return _ts(b) - _ts(a); });
       done.sort(function(a, b) { return _ts(b) - _ts(a); });
+      if (done.length > 100) done = done.slice(0, 100);
       wrap.innerHTML = buildOrdersTabs(active, done);
     })
     .catch(function(err) {
@@ -9545,7 +9568,7 @@ function renderGiftsPanel() {
   // Load users + gifts + orders in parallel, handle missing collections
   var p1 = fbDb.collection("users").get().catch(function(){ return {docs:[]}; });
   var p2 = fbDb.collection("gifts").get().catch(function(){ return {docs:[]}; });
-  var p3 = fbDb.collection("orders").get().catch(function(){ return {docs:[]}; });
+  var p3 = gaOrdersAll().catch(function(){ return {docs:[]}; });
 
   Promise.all([p1,p2,p3]).then(function(r) {
     var clients = {};
