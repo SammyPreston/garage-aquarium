@@ -11,7 +11,8 @@ export default async () => {
     return new Response("sent");
   } catch (e) {
     try { await sendTelegram("⚠️ Утреннее напоминание о заказах не сработало: " + (e && e.message)); } catch (e2) {}
-    return new Response("error: " + (e && e.message), { status: 500 });
+    // Отвечаем 200, чтобы Netlify не перезапускал функцию и не слал ошибку 3 раза подряд
+    return new Response("error: " + (e && e.message));
   }
 };
 
