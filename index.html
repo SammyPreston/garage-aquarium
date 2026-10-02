@@ -4273,12 +4273,13 @@ async function sendOrder() {
   var oLang = (localStorage.getItem("ga_lang") || "ru");
   var L = function(ru, ro) { return oLang === "ro" ? ro : ru; };
   var _nm = function(n) { return (oLang === "ro" && typeof window.i18nGet === "function") ? window.i18nGet(n) : n; };
-  var lines = [], total = 0, itemsData = [];
+  var lines = [], total = 0, itemsData = [], _fullTotal = 0;
   for (var id in cart) {
     var f = null;
     for (var i = 0; i < FISH.length; i++) { if (FISH[i].id == id) { f = FISH[i]; break; } }
     if (f) {
       var s = getPrice(id) * cart[id]; total += s;
+      _fullTotal += ((typeof _origGetPrice === "function") ? _origGetPrice(id) : getPrice(id)) * cart[id];
       lines.push("\u2705 " + _nm(f.name) + " x" + cart[id] + " = " + s + " MDL");
       // \u043c\u0430\u0448\u0438\u043d\u043e\u0447\u0438\u0442\u0430\u0435\u043c\u044b\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438: \u0441\u043a\u043b\u0430\u0434 \u0441\u043f\u0438\u0441\u044b\u0432\u0430\u0435\u0442 \u043f\u043e id, \u0430 \u043d\u0435 \u043f\u043e \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044e
       itemsData.push({ id: String(f.id), name: f.name, qty: cart[id], price: getPrice(id), sum: s });
@@ -4354,6 +4355,7 @@ async function sendOrder() {
           items: lines,
           itemsData: itemsData,
           total: total,
+          totalFull: (_fullTotal || 0) + (urgVal || 0),
           deliveryDate: dDate || '',
           deliveryTime: dTime || '',
           urgency: urgVal,
@@ -8453,11 +8455,12 @@ function openOrderEditor(orderId) {
 function saveOrderEdit(orderId) {
   if (!Array.isArray(OE_ITEMS)) OE_ITEMS = [];
   var itemsArr = [];
-  var total = 0;
+  var total = 0, fullTotal = 0;
   OE_ITEMS.forEach(function(it) {
     var qty = it.qty || 1;
     var sum = Math.round((it.price || 0) * qty);
     total += sum;
+    fullTotal += Math.round((it.base || it.price || 0) * qty);
     itemsArr.push("\u2705 " + (it.name || "—") + " x" + qty + " = " + sum + " MDL" + (it.disc > 0 ? (" (-" + it.disc + "%)") : ""));
   });
   var note = (document.getElementById("order-editor-note") || {}).value || "";
@@ -8467,7 +8470,7 @@ function saveOrderEdit(orderId) {
   var _svUrg = (window._oeOrder && parseInt(window._oeOrder.urgency)) || 0;
   // Позиции отредактированы вручную — старый машиночитаемый список больше не актуален.
   // Обнуляем его, чтобы склад считал этот заказ по строкам (как раньше) и не задвоил списание.
-  var _upd = { items: itemsArr, itemsData: [], total: total + _svUrg, adminNote: note, editedAt: new Date().toISOString() };
+  var _upd = { items: itemsArr, itemsData: [], total: total + _svUrg, totalFull: fullTotal + _svUrg, adminNote: note, editedAt: new Date().toISOString() };
   // Редактируемые данные заказа (имя, телефон, город, адрес)
   var _gv = function(id) { var el = document.getElementById(id); return el ? String(el.value).trim() : null; };
   var _nm2 = _gv("oe-name"), _ph2 = _gv("oe-phone"), _ct2 = _gv("oe-city"), _ad2 = _gv("oe-addr");
@@ -8754,7 +8757,8 @@ function oeOrderRow(d) {
   }
   if (!dateStr && d.date) dateStr = String(d.date);
   return { _ts: iso || '', date: dateStr, items: d.items || '', total: d.total || 0, status: d.status || 'pending',
-    name: d.name || '', phone: d.phone || '', addr: d.address || d.addr || '', note: d.comment || d.note || '', discount: d.discount || 0, email: d.email || '' };
+    name: d.name || '', phone: d.phone || '', addr: d.address || d.addr || '', note: d.comment || d.note || '', discount: parseInt(d.clientDiscount) || parseInt(d.discountPct) || parseInt(d.discount) || 0,
+    totalFull: parseInt(d.totalFull) || 0, email: d.email || '' };
 }
 
 function renderOrdersList(list, orders) {
@@ -8785,6 +8789,7 @@ function renderOrdersList(list, orders) {
       +     '<span class="ga-ord-st ' + st.cls + '">' + st.label + '</span>'
       +   '</div>'
       +   '<div class="ga-ord-sum">' + (o.total || 0) + ' <i>MDL</i></div>'
+      +   ((typeof gaOrdDiscHtml === "function") ? gaOrdDiscHtml(o) : '')
       +   '<div class="ga-ord-pos">' + itemsArr.length + ' позиц. в заказе</div>'
       +   '<div class="ga-ord-det" id="ga-ord-det-' + idx + '"><ul>' + items + '</ul></div>'
       +   '<div class="ga-ord-act">'
@@ -10491,15 +10496,52 @@ function loadCardEdits() {
 
 <script>
 /* GA-THEME: только навигация, бизнес-логика не изменена */
+// Скидка заказа для кабинета клиента: % берём из строк заказа "(-N%)",
+// а если их нет — из сохранённой скидки клиента. Сумма по прайсу — totalFull.
+function gaOrdDisc(o){
+  o=o||{};
+  var items=Array.isArray(o.items)?o.items:String(o.items||'').split(',');
+  var lines=[],tagged=0,paid=0,same=true,first=null;
+  items.forEach(function(x){
+    var t=String(x==null?'':x).trim(); if(!t)return;
+    var m=t.match(/\(-\s*([0-9]{1,2})\s*%\)/);
+    var d=m?(parseInt(m[1])||0):0;
+    lines.push(d);
+    if(/=\s*0\s*MDL/i.test(t))return;
+    paid++;
+    if(d>0)tagged++;
+    if(first===null)first=d; else if(first!==d)same=false;
+  });
+  var total=Number(o.total)||0, full=Number(o.totalFull)||0;
+  if(!(full>total))full=0;
+  var pct=0;
+  if(tagged>0){ if(same&&tagged===paid)pct=first||0; }
+  else pct=Number(o.discount)||0;
+  return {pct:pct,full:full,save:full?(full-total):0,lines:lines,tagged:tagged};
+}
+function gaOrdDiscHtml(o){
+  var g=gaOrdDisc(o);
+  if(!g.full&&!g.pct&&!g.tagged)return '';
+  var ro=false; try{ro=(localStorage.getItem('ga_lang')==='ro');}catch(e){}
+  var parts=[];
+  if(g.full)parts.push((ro?'Fără reducere: ':'Без скидки: ')+'<s>'+g.full+' MDL</s>');
+  if(g.pct>0)parts.push('<b style="color:#ff8a65">'+(ro?'reducere -':'скидка -')+g.pct+'%</b>');
+  else if(g.tagged>0&&!g.full)parts.push('<b style="color:#ff8a65">'+(ro?'cu reducere':'со скидкой')+'</b>');
+  if(g.save>0)parts.push((ro?'economie ':'экономия ')+g.save+' MDL');
+  return '<div style="font-size:12px;color:#8b9ea0;margin-top:5px;line-height:1.5">'+parts.join(' · ')+'</div>';
+}
 function gaViewOrder(i){
   var o=(window.GA_ORDERS||[])[i]; if(!o)return;
-  var disc=Number(o.discount||0);
+  var _gd=gaOrdDisc(o);
+  var disc=_gd.pct;
   var items=Array.isArray(o.items)?o.items:String(o.items||'').split(',');
   items=items.filter(function(x){return String(x).trim();});
   var rows=items.map(function(x,n){
     var t=String(x).trim();
-    var tag=disc>0
-      ? '<span class="ga-ov-tag on">со скидкой '+disc+'%</span>'
+    var _lm=t.match(/\(-\s*([0-9]{1,2})\s*%\)/);
+    var _ld=_lm?(parseInt(_lm[1])||0):((_gd.tagged>0||/=\s*0\s*MDL/i.test(t))?0:disc);
+    var tag=_ld>0
+      ? '<span class="ga-ov-tag on">со скидкой '+_ld+'%</span>'
       : '<span class="ga-ov-tag off">без скидки</span>';
     return '<div class="ga-ov-row"><span class="ga-ov-n">'+(n+1)+'</span><span class="ga-ov-t">'+t+'</span>'+tag+'</div>';
   }).join('');
@@ -10510,7 +10552,10 @@ function gaViewOrder(i){
     +'<button onclick="document.getElementById(\'ga-ov\').remove()">&times;</button></div>'
     +'<div class="ga-ov-body">'+(rows||'<p class="ga-ov-empty">Позиции не указаны</p>')+'</div>'
     +'<div class="ga-ov-foot">'
-    +(disc>0?'<span class="ga-ov-disc">Скидка на заказ: '+disc+'%</span>':'<span class="ga-ov-disc off">Заказ без скидки</span>')
+    +((disc>0||_gd.full||_gd.tagged>0)
+       ?'<span class="ga-ov-disc">'+(disc>0?('Скидка на заказ: '+disc+'%'):'Заказ со скидкой')
+         +(_gd.full?('<br>Без скидки: <s>'+_gd.full+' MDL</s> · экономия '+_gd.save+' MDL'):'')+'</span>'
+       :'<span class="ga-ov-disc off">Заказ без скидки</span>')
     +'<span class="ga-ov-sum">'+(o.total||0)+' MDL</span></div>'
     +'<div class="ga-ov-act"><button class="ga-ord-b prim" onclick="gaReceipt('+i+')">Скачать чек</button></div></div>';
   m.addEventListener('click',function(e){ if(e.target===m) m.remove(); });
