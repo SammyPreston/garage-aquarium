@@ -1595,6 +1595,87 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
   .ga-cookie-t{font-size:12.5px}
   .ga-priv-text{font-size:12px;padding:12px 14px 16px}
 }
+/* ── ГОТОВЫЕ НАБОРЫ (старт-паки) на баннере, под заголовком ── */
+.ga-hero-packs{margin:4px 0 16px;max-width:540px}
+.ga-hp-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:0 0 8px}
+.ga-hp-t{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#fff}
+.ga-hp-t em{font-style:normal;color:var(--ga-accent)}
+.ga-hp-sub{font-size:11px;color:#93a8a5}
+.ga-hp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ga-hp{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 10px 10px;border-radius:13px;border:1px solid rgba(47,211,180,.22);background:linear-gradient(180deg,rgba(12,30,27,.78),rgba(5,9,10,.78));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-family:'DM Sans',sans-serif;text-align:left;cursor:pointer;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s,background .25s}
+.ga-hp::after{content:'';position:absolute;right:-30px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(47,211,180,.2),transparent 70%);opacity:.6;transition:opacity .25s;pointer-events:none}
+.ga-hp:hover{border-color:rgba(47,211,180,.75);transform:translateY(-3px);box-shadow:0 10px 24px rgba(47,211,180,.16);background:linear-gradient(180deg,rgba(20,52,46,.85),rgba(6,14,13,.85))}
+.ga-hp:hover::after{opacity:1}
+.ga-hp-top{display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;margin-bottom:3px}
+.ga-hp-th{display:flex}
+.ga-hp-th i{width:22px;height:22px;border-radius:50%;margin-left:-7px;border:2px solid #0a1715;background:linear-gradient(135deg,#1f5a50,#0c2521);overflow:hidden;display:block}
+.ga-hp-th i:first-child{margin-left:0}
+.ga-hp-th img{width:100%;height:100%;object-fit:cover;display:block}
+.ga-hp-off{background:linear-gradient(135deg,#ff9a6b,#ff5f6d);color:#fff;font-family:'Oswald',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.3px;padding:1px 7px;border-radius:100px;box-shadow:0 3px 10px rgba(255,95,109,.35)}
+.ga-hp-vol{font-family:'Oswald',sans-serif;font-size:13px;color:#9fb3b0;line-height:1}
+.ga-hp-vol b{font-size:25px;font-weight:600;color:#fff;letter-spacing:.5px}
+.ga-hp-no{font-size:10.5px;color:#8ea3a0}
+.ga-hp-pr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;margin-top:2px}
+.ga-hp-pr b{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;color:var(--ga-accent)}
+.ga-hp-pr s{font-size:10.5px;color:#6f8380}
+.ga-hp-warn{grid-column:1/-1;border:1px dashed rgba(255,138,101,.7);background:rgba(40,16,10,.8)}
+.ga-hp-warn::after{display:none}
+.ga-hp-miss{font-size:11.5px;color:#ffb199;line-height:1.35}
+.ga-hp-fix{font-size:11px;color:var(--ga-accent);font-weight:600}
+@media(max-width:640px){
+  .ga-hero-packs{margin:2px 0 14px;max-width:none}
+  .ga-hp-grid{grid-template-columns:repeat(2,1fr);gap:7px}
+  .ga-hp-vol b{font-size:23px}
+  .ga-hp-t{font-size:13.5px;letter-spacing:.4px}
+}
+.ga-hp-for{font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:#8ea3a0;line-height:1.1}
+.ga-hp::before{content:'';position:absolute;top:0;bottom:0;left:-70%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);transform:skewX(-18deg);pointer-events:none;opacity:0}
+.ga-hp{transition:border-color .45s,transform .45s,box-shadow .45s,background .45s}
+.ga-hp.is-pick{border-color:rgba(47,211,180,.9);transform:translateY(-3px);box-shadow:0 0 0 1px rgba(47,211,180,.45),0 0 24px rgba(47,211,180,.32);background:linear-gradient(180deg,rgba(22,60,53,.88),rgba(6,16,14,.85))}
+.ga-hp.is-pick::before{animation:gaHpSweep .9s ease-out}
+.ga-hp.is-pick::after{opacity:1}
+.ga-hp.is-pick .ga-hp-vol b{color:var(--ga-accent)}
+@keyframes gaHpSweep{0%{left:-70%;opacity:1}100%{left:135%;opacity:1}}
+/* ── метка NEW: красная, с бликом ── */
+.new-badge{width:auto !important;height:24px !important;padding:0 11px !important;border-radius:7px !important;
+  background:linear-gradient(135deg,#ff5a68 0%,#e8112d 55%,#b5001d 100%) !important;color:#fff !important;
+  font-family:'Oswald',sans-serif;font-size:11.5px !important;font-weight:700;letter-spacing:1.6px;overflow:hidden;
+  box-shadow:0 6px 16px rgba(232,17,45,.45),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.18) !important;
+  animation:gaNewPulse 2.6s ease-in-out infinite !important}
+.new-badge::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:gaNewShine 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes gaNewPulse{0%,100%{transform:rotate(-6deg) translateY(0);box-shadow:0 6px 16px rgba(232,17,45,.45),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.18)}50%{transform:rotate(-6deg) translateY(-2px);box-shadow:0 8px 22px rgba(232,17,45,.7),0 0 0 4px rgba(255,77,94,.16),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.18)}}
+@keyframes gaNewShine{0%{left:-60%}55%,100%{left:140%}}
+.card-new{border:1.5px solid rgba(255,77,94,.55) !important;box-shadow:0 0 0 1px rgba(255,77,94,.1),0 8px 26px rgba(232,17,45,.14)}
+.card-new:hover{border-color:rgba(255,77,94,.95) !important}
+@media(prefers-reduced-motion:reduce){.new-badge,.new-badge::after{animation:none !important}}
+/* окно состава пака */
+.ga-pk-box{width:min(440px,100%)}
+.ga-pk-img{position:relative;aspect-ratio:16/7;background:#0b1113;overflow:hidden}
+.ga-pk-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ga-pk-off{position:absolute;top:10px;left:10px;background:#ff8a65;color:#fff;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;padding:3px 9px;border-radius:7px}
+.ga-pk-for{padding:10px 16px 0;font-size:12.5px;color:var(--ga-accent)}
+.ga-pk-q{flex:0 0 auto;font-family:'Oswald',sans-serif;font-size:14px;color:var(--ga-accent)}
+.ga-ov-disc s{color:#7d8f8e}
+.ga-pk-act{display:flex;gap:8px}
+/* редактор паков (админ) */
+.ga-pk-edbox{width:min(720px,100%);max-height:90vh}
+.ga-pk-ed{border:1px solid var(--ga-line);border-radius:12px;padding:10px 12px;margin:8px 0 12px;background:rgba(255,255,255,.02)}
+.ga-pk-edhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:8px}
+.ga-pk-edhead b{font-size:11px;color:var(--ga-muted);font-weight:500}
+.ga-pk-ed input[type=number],.ga-pk-ed select{background:#0b1113;border:1px solid var(--ga-line);color:#dbe7e6;border-radius:8px;padding:6px 8px;font-size:12.5px;font-family:'DM Sans',sans-serif}
+.ga-pk-edhead input[type=number]{width:64px}
+.ga-pk-offchk{font-size:12px;color:var(--ga-muted);display:flex;align-items:center;gap:4px;margin-left:auto}
+.ga-pk-edrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.ga-pk-edrow select{flex:1;min-width:0}
+.ga-pk-edrow input[type=number]{width:64px}
+.ga-pk-edrow button{background:none;border:1px solid var(--ga-line);color:#ff8a65;border-radius:8px;width:30px;height:30px;cursor:pointer}
+.ga-pk-kw{flex:1;font-size:12px;color:#ff8a65}
+.ga-pk-edbtm{display:flex;align-items:center;gap:8px;margin-top:4px}
+.ga-pk-edbtm .ga-ord-b{flex:0 0 auto}
+.ga-pk-edsum{flex:1;font-size:12px;color:var(--ga-muted);text-align:right}
+.ga-pk-edsum b{color:var(--ga-accent)}
+.ga-pk-del{color:#ff8a65 !important}
+.ga-pk-edfoot{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--ga-line)}
 </style>
 
 
@@ -1673,6 +1754,7 @@ function buildNewbiesSection(){}
     <div class="ga-hero-img"><video class="ga-hero-vid" autoplay muted loop playsinline preload="metadata" poster="hero-poster.jpg" width="2600" height="714" aria-hidden="true"><source src="hero.webm" type="video/webm"><source src="hero.mp4" type="video/mp4"><img src="hero.jpg" alt="Аквариумные рыбки" width="1983" height="793"></video></div>
     <div class="ga-hero-in">
       <h1 class="ga-h1">Живые краски<em>подводного мира</em></h1>
+      <div class="ga-hero-packs" id="ga-hero-packs" style="display:none"></div>
       <div class="ga-hero-sub"><b>Аквариумные рыбки</b> &bull; <b>Растения</b> &bull; <b>Корм</b></div>
       <div class="ga-hero-ship">Доставка по всей Молдове</div>
       <div class="ga-hero-btns">
@@ -5532,6 +5614,7 @@ function accOvClick(e){ if(e.target===document.getElementById("acc-mask")) docum
         <button id="atab-gifts" onclick="admTab('gifts')">&#127873; Gifts</button>
         <button id="atab-photo" onclick="admTab('photo')">&#128200; Статистика</button>
         <button onclick="gaPriceList()" title="Прайс-лист с оптовыми ценами" style="background:rgba(255,213,79,.07);border-color:rgba(255,213,79,.2);color:#ffd54f">&#128181; Прайс</button>
+        <button onclick="gaPackEditor()" title="Редактировать готовые наборы (старт-паки)" style="background:rgba(47,211,180,.07);border-color:rgba(47,211,180,.25);color:#2fd3b4">&#128230; Наборы</button>
         <button id="atab-stock" onclick="admTab('stock')" style="background:rgba(129,199,132,.06);border-color:rgba(129,199,132,.2);color:#81c784">&#128230; Склад</button>
 
       </div>
@@ -11534,6 +11617,430 @@ function gaGo(section,btn){
   if(typeof gaSyncCats==='function')gaSyncCats();
   gaScroll('ga-catalog');
 }
+</script>
+<script>
+/* ===== ГОТОВЫЕ НАБОРЫ / СТАРТ-ПАКИ (19.10.2026) =====
+   На сайте называются «Готовый набор»; внутренняя категория осталась "Старт паки".
+   Плитки паков — на баннере с рыбкой; клик открывает полный состав.
+   Пак = одна позиция корзины с отрицательным id (-101, -102, …): не влияет на maxId
+   новых карточек и не попадает в сетку каталога.
+   Цена считается живьём: сумма розничных цен состава (_origGetPrice) минус скидка пака.
+   Личная/акционная скидка на пак не накладывается. Склад пак не списывает.
+   Состав редактируется админом, хранится в Firebase: start_packs/config { packs:[…] }.
+   Пока документа нет — используются паки по умолчанию ниже. */
+var GA_PACKS_DEFAULT = [
+  { id:-101, no:1, vol:50, disc:25, items:[
+    {q:10,id:24},{q:6,id:6},{q:6,id:25},{q:2,id:9},{q:2,id:27},{q:1,id:38} ]},
+  { id:-102, no:2, vol:100, disc:25, items:[
+    {q:15,id:24},{q:10,id:6},{q:6,id:5},{q:6,id:32},{q:4,id:10},{q:2,id:27},{q:2,id:38} ]},
+  { id:-103, no:3, vol:150, disc:25, items:[
+    {q:20,id:24},{q:15,id:6},{q:10,id:5},{q:4,id:15},{q:2,kw:["стурисом","стуризом","sturisom","лорикари"]},
+    {q:3,id:11},{q:3,id:27},{q:3,id:38} ]},
+  { id:-104, no:4, vol:200, disc:25, items:[
+    {q:10,kw:["колумб"]},{q:10,kw:["бриллиант","брилиант","брильянт"]},{q:10,id:19},
+    {q:10,kw:["фонарик"]},{q:15,id:24},{q:4,id:27},{q:2,id:10},{q:2,id:38} ]}
+];
+var GA_PACKS = [];
+var GA_PACK_BY_ID = {};
+var _gaPacksLoaded = false, _gaPacksTries = 0;
+
+function gaPackEsc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// проверка и нормализация списка паков (данные из Firebase не доверяем вслепую)
+function gaPacksClean(arr) {
+  var out = [];
+  if (!Array.isArray(arr)) return out;
+  arr.forEach(function(p) {
+    if (!p || typeof p !== "object") return;
+    var id = parseInt(p.id, 10);
+    if (!(id < 0)) return;
+    var items = [];
+    (Array.isArray(p.items) ? p.items : []).forEach(function(it) {
+      if (!it || typeof it !== "object") return;
+      var q = parseInt(it.q, 10);
+      if (!(q > 0)) return;
+      if (it.id != null && !isNaN(parseInt(it.id, 10))) items.push({ q:q, id:parseInt(it.id, 10) });
+      else if (Array.isArray(it.kw) && it.kw.length) items.push({ q:q, kw:it.kw.map(function(k){ return String(k).toLowerCase(); }) });
+    });
+    var disc = parseInt(p.disc, 10); if (isNaN(disc) || disc < 0) disc = 25; if (disc > 90) disc = 90;
+    out.push({ id:id, no:parseInt(p.no, 10) || (out.length + 1), vol:parseInt(p.vol, 10) || 0,
+      disc:disc, items:items, off:!!p.off });
+  });
+  return out;
+}
+
+function gaPacksSet(arr) {
+  GA_PACKS = gaPacksClean(arr);
+  GA_PACK_BY_ID = {};
+  GA_PACKS.forEach(function(p) { GA_PACK_BY_ID[String(p.id)] = p; });
+  GA_PACKS.forEach(function(p) { gaPackSync(p); });
+}
+
+var GA_LAT2CYR = { a:"а", c:"с", e:"е", o:"о", p:"р", x:"х", y:"у", k:"к", m:"м", t:"т", h:"н", b:"в" };
+function gaPackNorm(t) {
+  return String(t || "").toLowerCase().replace(/ё/g, "е").replace(/[acoepxykmthb]/g, function(ch) { return GA_LAT2CYR[ch]; });
+}
+function gaPackFind(it) {
+  var list = (typeof FISH !== "undefined" && Array.isArray(FISH)) ? FISH : [];
+  var kws = (it.id == null && Array.isArray(it.kw)) ? it.kw : [];
+  if (it.id != null) {
+    for (var i = 0; i < list.length; i++) { var g = list[i]; if (g && g.id === it.id) return g; }
+    return null;
+  }
+  // ключевые слова по приоритету: первое слово важнее (стурисома, если нет — лорикария)
+  for (var k = 0; k < kws.length; k++) {
+    var w = String(kws[k]).toLowerCase(), wn = gaPackNorm(w);
+    for (var j = 0; j < list.length; j++) {
+      var f = list[j];
+      if (!f || typeof f.id !== "number" || f.id <= 0) continue;
+      var raw = String(f.name || "").toLowerCase();
+      if (raw.indexOf(w) >= 0 || gaPackNorm(raw).indexOf(wn) >= 0) return f;
+    }
+  }
+  return null;
+}
+
+// {ok, full, price, rows:[{f,q,price}], miss:[текст]}
+function gaPackCalc(p) {
+  var rows = [], full = 0, ok = true, miss = [];
+  if (!p || !Array.isArray(p.items) || !p.items.length) return { ok:false, full:0, price:0, rows:[], miss:["нет позиций"] };
+  p.items.forEach(function(it) {
+    var f = gaPackFind(it);
+    var pr = f ? (Number(typeof _origGetPrice === "function" ? _origGetPrice(f.id) : 0) || 0) : 0;
+    if (!f) { ok = false; miss.push(it.id != null ? ("товар No." + it.id) : ("«" + (it.kw || []).join(" / ") + "»")); return; }
+    if (pr <= 0) { ok = false; miss.push(f.name + " (нет цены)"); return; }
+    full += pr * it.q;
+    rows.push({ f:f, q:it.q, price:pr });
+  });
+  var price = Math.round(full * (1 - (p.disc || 0) / 100));
+  return { ok:ok, full:full, price:price, rows:rows, miss:miss };
+}
+
+function gaPackFishImg(id) {
+  var el = document.querySelector("#card" + id + " .cimg img");
+  return (el && el.src) ? el.src : (IMGS[String(id)] || "");
+}
+function gaPackImg(c) {
+  if (!c || !c.rows || !c.rows[0]) return "";
+  return gaPackFishImg(c.rows[0].f.id);
+}
+
+// синхронизирует служебную запись пака в FISH/PRICES (нужно корзине и заказу)
+function gaPackSync(p) {
+  var c = gaPackCalc(p);
+  var nm = "Готовый набор №" + p.no + " (аквариум " + p.vol + " л)";
+  if (c.ok) {
+    nm += ": " + c.rows.map(function(r){ return r.f.name + " ×" + r.q; }).join(", ");
+    PRICES[String(p.id)] = c.price;
+    IMGS[String(p.id)] = gaPackImg(c);
+  }
+  var ex = null;
+  for (var i = 0; i < FISH.length; i++) { if (FISH[i].id === p.id) { ex = FISH[i]; break; } }
+  if (!ex) { ex = { id:p.id, name:nm, cat:"Старт паки", cats:["Старт паки"], price:0 }; FISH.push(ex); }
+  ex.name = nm; ex.price = c.ok ? c.price : 0;
+  return c;
+}
+
+function gaIsRo() { try { return localStorage.getItem("ga_lang") === "ro"; } catch(e) { return false; } }
+
+// плитки на баннере
+var _gaPacksHtml = "";
+function gaPacksRender() {
+  var host = document.getElementById("ga-hero-packs");
+  if (!host) return;
+  var adm = (typeof aOn !== "undefined" && aOn);
+  var html = "", shown = 0;
+  GA_PACKS.forEach(function(p) {
+    var c = gaPackSync(p);
+    if (!c.ok) {
+      // покупатель такой набор не видит; админ видит, чего не хватает
+      if (adm) html += '<button type="button" class="ga-hp ga-hp-warn" data-packed="' + p.id + '">'
+        + '<span class="ga-hp-no">Набор №' + p.no + ' &middot; ' + p.vol + ' л</span>'
+        + '<span class="ga-hp-miss">&#9888; Скрыт: не найдено ' + gaPackEsc(c.miss.join(", ")) + '</span>'
+        + '<span class="ga-hp-fix">Исправить &rarr;</span></button>';
+      return;
+    }
+    if (p.off) return;
+    shown++;
+    var fish = 0; c.rows.forEach(function(r) { fish += r.q; });
+    var th = "";
+    c.rows.slice(0, 3).forEach(function(r) {
+      var src = gaPackFishImg(r.f.id);
+      th += '<i>' + (src ? '<img src="' + src + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</i>';
+    });
+    html += '<button type="button" class="ga-hp" data-pack="' + p.id + '">'
+      + '<span class="ga-hp-top"><span class="ga-hp-th">' + th + '</span><span class="ga-hp-off">-' + p.disc + '%</span></span>'
+      + '<span class="ga-hp-for">для аквариума</span>'
+      + '<span class="ga-hp-vol"><b>' + p.vol + '</b> л</span>'
+      + '<span class="ga-hp-no"><span>набор</span> &middot; ' + fish + ' <span>шт</span></span>'
+      + '<span class="ga-hp-pr"><b>' + c.price + ' MDL</b><s>' + c.full + '</s></span>'
+      + '</button>';
+  });
+  var out = (shown || adm && html)
+    ? '<div class="ga-hp-head"><div class="ga-hp-t"><span>Сэкономь</span> <em>на запуске аквариума</em></div>'
+      + '<div class="ga-hp-sub">готовые наборы рыб &mdash; нажмите, чтобы увидеть состав</div></div>'
+      + '<div class="ga-hp-grid">' + html + '</div>'
+    : "";
+  if (out === _gaPacksHtml) return; // ничего не изменилось — не перерисовываем
+  _gaPacksHtml = out;
+  host.innerHTML = out;
+  host.style.display = out ? "" : "none";
+  if (typeof applyI18n === "function") applyI18n();
+}
+
+// окно с полным составом
+function gaPackOpen(id) {
+  var p = GA_PACK_BY_ID[String(id)];
+  if (!p) return;
+  var c = gaPackSync(p);
+  if (!c.ok) { showToast("Набор временно недоступен"); return; }
+  var img = gaPackImg(c);
+  var rows = c.rows.map(function(r, n) {
+    return '<div class="ga-ov-row"><span class="ga-ov-n">' + (n + 1) + '</span>'
+      + '<span class="ga-ov-t">' + gaPackEsc(r.f.name) + '</span>'
+      + '<span class="ga-pk-q">' + r.q + ' шт</span></div>';
+  }).join("");
+  var old = document.getElementById("ga-pk-ov"); if (old) old.remove();
+  var m = document.createElement("div");
+  m.id = "ga-pk-ov"; m.className = "ga-ov-mask";
+  m.innerHTML = '<div class="ga-ov-box ga-pk-box">'
+    + '<div class="ga-ov-head"><b><span>Готовый набор</span> №' + p.no + ' &middot; ' + p.vol + ' л</b>'
+    +   '<button type="button" data-pk="close">&times;</button></div>'
+    + (img ? '<div class="ga-pk-img"><img src="' + img + '" alt="" onerror="this.parentNode.style.display=\'none\'"><span class="ga-pk-off">-' + p.disc + '%</span></div>' : '')
+    + '<div class="ga-pk-for"><span>Для аквариума</span> ' + p.vol + ' л</div>'
+    + '<div class="ga-ov-body">' + rows + '</div>'
+    + '<div class="ga-ov-foot"><span class="ga-ov-disc"><s>' + c.full + ' MDL</s> &middot; <span>скидка</span> ' + p.disc + '%</span>'
+    +   '<span class="ga-ov-sum">' + c.price + ' MDL</span></div>'
+    + '<div class="ga-ov-act ga-pk-act">'
+    +   '<button type="button" class="ga-ord-b prim" data-pk="add">В корзину</button>'
+    +   ((typeof aOn !== "undefined" && aOn) ? '<button type="button" class="ga-ord-b" data-pk="edit">&#9998; Редактировать</button>' : '')
+    + '</div></div>';
+  m.addEventListener("click", function(e) {
+    if (e.target === m) { m.remove(); return; }
+    var b = e.target.closest ? e.target.closest("[data-pk]") : null;
+    if (!b) return;
+    var a = b.getAttribute("data-pk");
+    if (a === "close") m.remove();
+    else if (a === "add") { gaPackAdd(p.id); m.remove(); }
+    else if (a === "edit") { m.remove(); gaPackEditor(p.id); }
+  });
+  document.body.appendChild(m);
+  if (typeof applyI18n === "function") applyI18n();
+}
+
+function gaPackAdd(id) {
+  var p = GA_PACK_BY_ID[String(id)];
+  if (!p) return;
+  var c = gaPackSync(p);
+  if (!c.ok) { showToast("Набор временно недоступен"); return; }
+  cart[id] = (cart[id] || 0) + 1;
+  updBadge();
+  showToast(gaIsRo() ? ("Setul №" + p.no + " a fost adăugat în coș") : ("Набор №" + p.no + " добавлен в корзину"));
+}
+
+// клик по плитке на баннере
+document.addEventListener("click", function(e) {
+  var t = e.target && e.target.closest ? e.target.closest(".ga-hp") : null;
+  if (!t) return;
+  if (t.hasAttribute("data-packed")) { gaPackEditor(parseInt(t.getAttribute("data-packed"), 10)); return; }
+  gaPackOpen(parseInt(t.getAttribute("data-pack"), 10));
+});
+
+// цена пака: без личной/акционной скидки, всегда актуальная
+(function() {
+  var _gaPrevGetPrice = getPrice;
+  getPrice = function(id) {
+    var p = GA_PACK_BY_ID[String(id)];
+    if (p) { var c = gaPackSync(p); return c.ok ? c.price : 0; }
+    return _gaPrevGetPrice(id);
+  };
+})();
+
+// ===== Загрузка паков из Firebase =====
+function gaPacksLoad() {
+  if (_gaPacksLoaded || typeof fbDb === "undefined" || !fbDb) return;
+  _gaPacksLoaded = true;
+  fbDb.collection("start_packs").doc("config").get().then(function(doc) {
+    if (doc.exists) {
+      var d = doc.data() || {};
+      if (Array.isArray(d.packs)) { gaPacksSet(d.packs); _gaPacksHtml = ""; gaPacksRender(); }
+    }
+  }).catch(function() { if (++_gaPacksTries < 3) _gaPacksLoaded = false; });
+}
+
+// ===== РЕДАКТОР ПАКОВ (только админ) =====
+var _gaPkEdit = null; // рабочая копия списка
+
+function gaPackFishOptions(selId) {
+  var list = (Array.isArray(FISH) ? FISH : []).filter(function(f) {
+    return f && typeof f.id === "number" && f.id > 0;
+  }).slice().sort(function(a, b) { return String(a.name).localeCompare(String(b.name), "ru"); });
+  var h = '<option value="">— выберите товар —</option>';
+  list.forEach(function(f) {
+    h += '<option value="' + f.id + '"' + (f.id === selId ? ' selected' : '') + '>'
+      + gaPackEsc(f.name) + ' — ' + ((typeof _origGetPrice === "function") ? _origGetPrice(f.id) : 0) + ' MDL</option>';
+  });
+  return h;
+}
+
+function gaPackEditor(focusId) {
+  if (typeof aOn === "undefined" || !aOn) { showToast("Только для администратора"); return; }
+  _gaPkEdit = JSON.parse(JSON.stringify(GA_PACKS));
+  // ключевые слова → конкретный товар, если он найден
+  _gaPkEdit.forEach(function(p) {
+    p.items.forEach(function(it) {
+      if (it.id == null) { var f = gaPackFind(it); if (f) { it.id = f.id; delete it.kw; } }
+    });
+  });
+  var old = document.getElementById("ga-pk-ed"); if (old) old.remove();
+  var m = document.createElement("div");
+  m.id = "ga-pk-ed"; m.className = "ga-ov-mask";
+  m.style.zIndex = "1250";
+  m.innerHTML = '<div class="ga-ov-box ga-pk-edbox">'
+    + '<div class="ga-ov-head"><b>&#128230; Редактор готовых наборов</b><button type="button" data-ed="close">&times;</button></div>'
+    + '<div class="ga-ov-body" id="ga-pk-ed-body"></div>'
+    + '<div class="ga-pk-edfoot">'
+    +   '<button type="button" class="ga-ord-b" data-ed="addpack">&#43; Новый пак</button>'
+    +   '<button type="button" class="ga-ord-b prim" data-ed="save">&#128190; Сохранить</button>'
+    + '</div></div>';
+  m.addEventListener("click", gaPackEdClick);
+  m.addEventListener("change", gaPackEdChange);
+  document.body.appendChild(m);
+  gaPackEdRender();
+  if (focusId) {
+    var el = document.getElementById("ga-pk-ed-" + Math.abs(focusId));
+    if (el) el.scrollIntoView({ block:"start" });
+  }
+}
+
+function gaPackEdRender() {
+  var body = document.getElementById("ga-pk-ed-body");
+  if (!body || !Array.isArray(_gaPkEdit)) return;
+  var h = "";
+  _gaPkEdit.forEach(function(p, pi) {
+    var c = gaPackCalc(p);
+    var rows = p.items.map(function(it, ii) {
+      var sel = (it.id != null)
+        ? '<select data-f="item" data-p="' + pi + '" data-i="' + ii + '">' + gaPackFishOptions(it.id) + '</select>'
+        : '<span class="ga-pk-kw">не найден: ' + gaPackEsc((it.kw || []).join(" / ")) + '</span>';
+      return '<div class="ga-pk-edrow">' + sel
+        + '<input type="number" min="1" value="' + it.q + '" data-f="q" data-p="' + pi + '" data-i="' + ii + '">'
+        + '<button type="button" data-ed="delrow" data-p="' + pi + '" data-i="' + ii + '" title="Удалить">&#10005;</button></div>';
+    }).join("");
+    h += '<div class="ga-pk-ed" id="ga-pk-ed-' + Math.abs(p.id) + '">'
+      + '<div class="ga-pk-edhead">'
+      +   '<b>Пак №</b><input type="number" min="1" value="' + p.no + '" data-f="no" data-p="' + pi + '">'
+      +   '<b>Литры</b><input type="number" min="1" value="' + p.vol + '" data-f="vol" data-p="' + pi + '">'
+      +   '<b>Скидка %</b><input type="number" min="0" max="90" value="' + p.disc + '" data-f="disc" data-p="' + pi + '">'
+      +   '<label class="ga-pk-offchk"><input type="checkbox" data-f="off" data-p="' + pi + '"' + (p.off ? ' checked' : '') + '> скрыть</label>'
+      + '</div>'
+      + rows
+      + '<div class="ga-pk-edbtm">'
+      +   '<button type="button" class="ga-ord-b" data-ed="addrow" data-p="' + pi + '">&#43; Позиция</button>'
+      +   '<span class="ga-pk-edsum">' + (c.ok ? (c.full + ' &rarr; <b>' + c.price + ' MDL</b>') : '<i>есть ненайденные позиции</i>') + '</span>'
+      +   '<button type="button" class="ga-ord-b ga-pk-del" data-ed="delpack" data-p="' + pi + '">Удалить пак</button>'
+      + '</div></div>';
+  });
+  body.innerHTML = h || '<p class="ga-ov-empty">Паков нет — нажмите «Новый пак»</p>';
+}
+
+function gaPackEdChange(e) {
+  var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
+  if (!f || !Array.isArray(_gaPkEdit)) return;
+  var p = _gaPkEdit[parseInt(t.getAttribute("data-p"), 10)];
+  if (!p) return;
+  var ii = parseInt(t.getAttribute("data-i"), 10);
+  if (f === "item") { var v = parseInt(t.value, 10); if (v > 0 && p.items[ii]) { p.items[ii].id = v; delete p.items[ii].kw; } }
+  else if (f === "q") { var q = parseInt(t.value, 10); if (p.items[ii]) p.items[ii].q = q > 0 ? q : 1; }
+  else if (f === "off") p.off = !!t.checked;
+  else { var n = parseInt(t.value, 10); p[f] = isNaN(n) ? 0 : n; }
+  gaPackEdRender();
+}
+
+function gaPackEdClick(e) {
+  var m = document.getElementById("ga-pk-ed");
+  if (e.target === m) return;
+  var b = e.target.closest ? e.target.closest("[data-ed]") : null;
+  if (!b || !Array.isArray(_gaPkEdit)) return;
+  var a = b.getAttribute("data-ed");
+  var pi = parseInt(b.getAttribute("data-p"), 10), ii = parseInt(b.getAttribute("data-i"), 10);
+  if (a === "close") { if (m) m.remove(); return; }
+  if (a === "addrow" && _gaPkEdit[pi]) { _gaPkEdit[pi].items.push({ q:1, id:0 }); }
+  else if (a === "delrow" && _gaPkEdit[pi]) { _gaPkEdit[pi].items.splice(ii, 1); }
+  else if (a === "delpack" && _gaPkEdit[pi]) {
+    if (!confirm("Удалить набор №" + _gaPkEdit[pi].no + "?")) return;
+    _gaPkEdit.splice(pi, 1);
+  }
+  else if (a === "addpack") {
+    var minId = -100, maxNo = 0;
+    _gaPkEdit.forEach(function(p) { if (p.id < minId) minId = p.id; if (p.no > maxNo) maxNo = p.no; });
+    GA_PACKS.forEach(function(p) { if (p.id < minId) minId = p.id; });
+    _gaPkEdit.push({ id:minId - 1, no:maxNo + 1, vol:100, disc:25, items:[{ q:1, id:0 }] });
+  }
+  else if (a === "save") { gaPackEdSave(); return; }
+  gaPackEdRender();
+}
+
+function gaPackEdSave() {
+  if (typeof fbDb === "undefined" || !fbDb) { showToast("Firebase не подключён"); return; }
+  var bad = false;
+  _gaPkEdit.forEach(function(p) {
+    p.items = p.items.filter(function(it) { return (it.id > 0 || (Array.isArray(it.kw) && it.kw.length)) && it.q > 0; });
+    if (!p.items.length || !(p.vol > 0)) bad = true;
+  });
+  if (bad) { showToast("В каждом паке нужен объём и хотя бы одна позиция"); gaPackEdRender(); return; }
+  var clean = gaPacksClean(_gaPkEdit);
+  fbDb.collection("start_packs").doc("config").set({ packs: clean, updatedAt: new Date().toISOString() })
+    .then(function() {
+      gaPacksSet(clean);
+      _gaPacksHtml = "";
+      gaPacksRender();
+      var m = document.getElementById("ga-pk-ed"); if (m) m.remove();
+      showToast("✅ Наборы сохранены");
+    })
+    .catch(function(err) { showToast("Ошибка сохранения: " + err.message); });
+}
+
+// ===== запуск =====
+gaPacksSet(GA_PACKS_DEFAULT);
+(function() {
+  if (typeof window.i18nSet === "function") {
+    window.i18nSet("Сэкономь", "Economisește");
+    window.i18nSet("на запуске аквариума", "la pornirea acvariului");
+    window.i18nSet("готовые наборы рыб — нажмите, чтобы увидеть состав", "seturi gata de pești — apăsați pentru a vedea conținutul");
+    window.i18nSet("для аквариума", "pentru acvariu de");
+    window.i18nSet("набор", "set");
+    window.i18nSet("шт", "buc");
+    window.i18nSet("Готовый набор", "Set gata");
+    window.i18nSet("Для аквариума", "Pentru acvariu de");
+    window.i18nSet("скидка", "reducere");
+  }
+  var run = function() { try { gaPacksLoad(); gaPacksRender(); } catch(e) {} };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
+  // цены, фото и карточки из Firebase приходят позже (на медленном интернете — сильно позже),
+  // поэтому проверяем периодически; перерисовка только если что-то изменилось
+  setInterval(run, 2500);
+  // «выбор»: подсветка бежит по наборам по очереди; при наведении мышью — пауза
+  var reduce = false;
+  try { reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e) {}
+  if (!reduce) {
+    var pick = -1;
+    setInterval(function() {
+      if (document.hidden) return;
+      var host = document.getElementById("ga-hero-packs");
+      if (!host || host.style.display === "none") return;
+      if (host.matches && host.matches(":hover")) return;
+      var t = host.querySelectorAll(".ga-hp[data-pack]");
+      if (!t.length) return;
+      for (var i = 0; i < t.length; i++) t[i].classList.remove("is-pick");
+      pick = (pick + 1) % t.length;
+      t[pick].classList.add("is-pick");
+    }, 1400);
+  }
+})();
 </script>
 </body>
 </html>
