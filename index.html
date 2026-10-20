@@ -1793,6 +1793,54 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-mbar-info b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span{font-size:11.5px;color:#FFB020;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span.ok{color:#4ade80}
+/* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
+.ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
+.ga-gbtn:hover{background:#f2f5f7}
+.ga-gnote{font-size:11px;color:#9FC4D0;text-align:center;line-height:1.4;margin-bottom:8px}
+.ga-gnote a{color:#2EE6C5}
+.ga-gor{display:flex;align-items:center;gap:10px;margin:4px 0 10px;color:#9FC4D0;font-size:11.5px}
+.ga-gor::before,.ga-gor::after{content:'';flex:1;height:1px;background:#1E3F4D}
+.ga-me{margin:0 0 16px;padding:16px 18px;border-radius:18px;background:linear-gradient(160deg,#143241,#0F2430);border:1px solid rgba(46,230,197,.35)}
+.ga-me-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin-bottom:12px}
+.ga-me-hi{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;color:#fff;letter-spacing:.4px}
+.ga-me-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.5);color:#4ade80;font-size:12px;font-weight:700}
+.ga-me-acc{background:none;border:none;color:#2EE6C5;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;padding:0}
+.ga-me-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px}
+.ga-me-card{padding:14px;border-radius:14px;background:rgba(11,26,34,.6);border:1px solid #1E3F4D}
+.ga-me-l{font-size:12px;color:#9FC4D0;margin-bottom:6px}
+.ga-me-l b{color:#fff}
+.ga-me-bar{height:8px;border-radius:100px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 4px}
+.ga-me-bar i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,#22C55E,#2EE6C5)}
+.ga-me-gift{display:flex;align-items:center;gap:8px;margin:10px 0 12px;padding:9px 11px;border-radius:10px;background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.3);color:#FFD27A;font-size:12px;line-height:1.35}
+.ga-me-gift.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.45);color:#4ade80}
+.ga-me-rep{width:100%;height:48px;border:none;border-radius:12px;background:var(--ga-cta);color:var(--ga-cta-t);font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.ga-me-rep:hover{background:var(--ga-cta-h)}
+.ga-me-rep:disabled{opacity:.45;cursor:default}
+.ga-me-h{display:flex;align-items:center;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.ga-me-h a,.ga-me-h button{font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;font-size:12.5px;color:#2EE6C5;background:none;border:none;cursor:pointer;text-decoration:none}
+.ga-me-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(30,63,77,.7)}
+.ga-me-row:last-child{border-bottom:0}
+.ga-me-th{flex:0 0 40px;height:40px;border-radius:9px;background:#122B36;overflow:hidden}
+.ga-me-th img{width:100%;height:100%;object-fit:cover;display:block}
+.ga-me-n{flex:1;min-width:0}
+.ga-me-n b{display:block;font-size:13px;color:#EAF4F7;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ga-me-n span{font-size:11.5px;color:#9FC4D0}
+.ga-me-plus{flex:0 0 38px;height:38px;border:none;border-radius:10px;background:var(--ga-cta);color:var(--ga-cta-t);font-size:22px;font-weight:700;line-height:1;cursor:pointer}
+.ga-me-plus:hover{background:var(--ga-cta-h)}
+.ga-me-plus:disabled{background:#1E3F4D;color:#9FC4D0;font-size:11px;cursor:default}
+.ga-me-new{margin-top:14px}
+.ga-me-strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.ga-me-strip::-webkit-scrollbar{display:none}
+.ga-me-nc{flex:0 0 150px;border-radius:12px;background:rgba(11,26,34,.6);border:1px solid #1E3F4D;overflow:hidden;display:flex;flex-direction:column}
+.ga-me-nc .ga-me-ni{position:relative;aspect-ratio:4/3;background:#122B36}
+.ga-me-nc .ga-me-ni img{width:100%;height:100%;object-fit:cover;display:block}
+.ga-me-nc .ga-me-ni em{position:absolute;top:6px;left:6px;font-style:normal;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:#fff;background:linear-gradient(135deg,#ff5a68,#e8112d);padding:2px 7px;border-radius:5px}
+.ga-me-nc .ga-me-nb{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;padding:8px}
+.ga-me-nc .ga-me-nb b{display:block;font-size:12px;color:#EAF4F7;font-weight:600;line-height:1.25;max-height:30px;overflow:hidden}
+.ga-me-nc .ga-me-nb span{display:block;font-family:'Oswald',sans-serif;font-size:14px;color:#2EE6C5;margin-top:2px}
+.ga-me-nc .ga-me-plus{flex:0 0 34px;height:34px;font-size:20px}
+@media(max-width:860px){.ga-me-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.ga-me{padding:13px 12px;border-radius:16px}.ga-me-hi{font-size:19px}.ga-me-nc{flex-basis:132px}}
 /* ══ ЭТАП 5 (20.10.2026): тексты и порядок блоков ══ */
 /* «Доставка» + «Почему мы» объединены в один блок «Рыба приедет живой»; старый блок «Почему» скрыт (остался в коде) */
 #ga-why{display:none !important}
@@ -1917,6 +1965,7 @@ function buildNewbiesSection(){}
 </header>
 
 <main>
+  <div class="ga-me" id="ga-me" style="display:none"></div>
   <div class="hero" id="ga-hero">
     <div class="ga-hero-img"><video class="ga-hero-vid" autoplay muted loop playsinline preload="metadata" poster="hero-poster.jpg" width="2600" height="714" aria-hidden="true"><source src="hero.webm" type="video/webm"><source src="hero.mp4" type="video/mp4"><img src="hero.jpg" alt="Аквариумные рыбки" width="1983" height="793"></video></div>
     <div class="ga-hero-in">
@@ -4614,6 +4663,13 @@ async function sendOrder() {
   var _payTxt = (oLang === "ro" && typeof window.i18nGet === "function") ? window.i18nGet(dPay) : dPay;
   if (dPay) msg += "💳 " + L("Оплата", "Plata") + ": " + _payTxt + "\n";
   var _persDisc = (typeof getMyDiscount === "function") ? (getMyDiscount() || 0) : 0;
+  try {
+    if (fbAuth && fbAuth.currentUser && fbDb) {
+      var _ud = await fbDb.collection("users").doc(fbAuth.currentUser.uid).get();
+      var _dbP = (_ud.exists && _ud.data()) ? (parseInt(_ud.data().discount) || 0) : 0;
+      if (_dbP !== _persDisc) msg += "\u26A0\uFE0F " + L("Скидка клиента по базе", "Reducere client în baza de date") + ": " + _dbP + "% — " + L("проверьте сумму", "verificați suma") + "\n";
+    }
+  } catch (e) {}
   if (_persDisc > 0) msg += "\u{1F4B3} " + L("\u0421\u043A\u0438\u0434\u043A\u0430 \u043A\u043B\u0438\u0435\u043D\u0442\u0430", "Reducere client") + ": -" + _persDisc + "%\n";
   msg += "\u{1F4B0} " + L("\u0418\u0422\u041E\u0413\u041E", "TOTAL") + ": " + total + " MDL\n";
   if (note) msg += "\u{1F4AC} " + note + "\n";
@@ -5096,6 +5152,9 @@ function mFileChosen(e) {
 <div class="auth-mask" id="auth-mask">
   <div class="auth-panel">
     <h3>&#128100; Личный кабинет</h3>
+    <button type="button" class="ga-gbtn" onclick="gaGoogleLogin()"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span>Войти через Google</span></button>
+    <div class="ga-gnote">Входя через Google, вы соглашаетесь с <a href="#" onclick="event.preventDefault();gaPrivacy()">Политикой конфиденциальности</a></div>
+    <div class="ga-gor"><span>или по email</span></div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Войти</button>
       <button class="auth-tab" id="tab-reg" onclick="switchTab('reg')">Регистрация</button>
@@ -5114,7 +5173,7 @@ function mFileChosen(e) {
       <label class="ga-consent"><input type="checkbox" id="ga-consent-reg"><span>Согласен(на) на обработку персональных данных согласно <a href="#" onclick="event.preventDefault();gaPrivacy()">Политике конфиденциальности</a>.</span></label>
             <button class="auth-submit" onclick="doAuthReg()">Создать аккаунт</button>
     </div>
-    <div class="auth-msg">Вход через email. Данные хранятся локально.</div>
+    <div class="auth-msg">Заказы и скидка хранятся в защищённой базе — видны с любого устройства.</div>
     <button onclick="document.getElementById('auth-mask').classList.remove('show')" style="background:none;border:none;color:#7a9bbf;font-size:12px;cursor:pointer;text-align:center">Закрыть</button>
   </div>
 </div>
@@ -5867,6 +5926,13 @@ function setDiscount(email, pct) {
 function getMyDiscount() {
   var email = getCurrentUser();
   if (!email) return 0;
+  // Этап 7: если Firebase подключён — скидка только у вошедшего клиента и только из базы
+  // (window._gaDbDisc приходит из users/{uid}.discount), а не из памяти браузера, которую можно подправить.
+  if (typeof fbAuth !== "undefined" && fbAuth) {
+    var u = fbAuth.currentUser;
+    if (!u || !u.email || String(u.email).toLowerCase() !== String(email).toLowerCase()) return 0;
+    return (typeof window._gaDbDisc === "number") ? window._gaDbDisc : 0;
+  }
   var d = getDiscounts();
   return d[email] || 0;
 }
@@ -6588,6 +6654,7 @@ function initFirebase() {
           fbDb.collection("users").doc(user.uid).get().then(function(doc) {
             var pct = 0;
             if (doc.exists && doc.data() && doc.data().discount) pct = parseInt(doc.data().discount) || 0;
+            window._gaDbDisc = pct;
             try {
               var discounts = JSON.parse(localStorage.getItem("ga_discounts") || "{}");
               if ((parseInt(discounts[user.email]) || 0) !== pct) {
@@ -6600,6 +6667,7 @@ function initFirebase() {
         }
       } else {
         fbCurrentUser = null;
+        window._gaDbDisc = 0;
         localStorage.removeItem("ga_user");
         updateHeaderAuth();
       }
@@ -6704,6 +6772,7 @@ function doAuthLogin() {
         showToast("Welcome back, " + displayName + "!");
         // Load discount from Firestore
         fbDb.collection("users").doc(cred.user.uid).get().then(function(doc) {
+          window._gaDbDisc = (doc.exists && doc.data().discount) ? (parseInt(doc.data().discount) || 0) : 0;
           if (doc.exists && doc.data().discount) {
             var discounts = getDiscounts();
             discounts[email] = doc.data().discount;
@@ -12499,6 +12568,240 @@ function gaItem(id, qty) {
   });
 })();
 
+// ===== ЭТАП 7: вход через Google и блок постоянного клиента =====
+var GA_STAFF_EMAILS = ["admin@garageaquarium.shop", "reports@garageaquarium.shop"];
+
+function gaGoogleLogin() {
+  var ro = gaIsRo();
+  if (typeof fbAuth === "undefined" || !fbAuth || typeof firebase === "undefined") {
+    showToast(ro ? "Se încarcă, încercați peste câteva secunde" : "Загрузка, попробуйте через пару секунд");
+    return;
+  }
+  var prov = new firebase.auth.GoogleAuthProvider();
+  try { prov.setCustomParameters({ prompt: "select_account" }); } catch (e) {}
+  fbAuth.signInWithPopup(prov).then(function(res) {
+    var u = res && res.user;
+    if (!u) return;
+    var m = document.getElementById("auth-mask"); if (m) m.classList.remove("show");
+    showToast((ro ? "Bun venit, " : "Добро пожаловать, ") + (u.displayName || u.email));
+    // профиль клиента в базе: создаём, если входит впервые (скидка 0 — правила базы другого не позволят)
+    if (typeof fbDb !== "undefined" && fbDb) {
+      var ref = fbDb.collection("users").doc(u.uid);
+      ref.get().then(function(d) {
+        if (d.exists) return;
+        return ref.set({
+          name: u.displayName || String(u.email).split("@")[0],
+          email: u.email,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          discount: 0,
+          provider: "google",
+          consentAt: new Date().toISOString()
+        }).then(function() {
+          try { if (typeof notifyTelegramRegistration === "function") notifyTelegramRegistration(u.displayName || "", u.email); } catch (e) {}
+        });
+      }).catch(function() {});
+    }
+  }).catch(function(err) {
+    var c = (err && err.code) || "";
+    if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
+    if (c === "auth/popup-blocked") { try { fbAuth.signInWithRedirect(prov); } catch (e) {} return; }
+    if (c === "auth/unauthorized-domain" || c === "auth/operation-not-allowed") {
+      showToast(ro ? "Intrarea cu Google nu este încă activată" : "Вход через Google пока не включён");
+      return;
+    }
+    showToast((ro ? "Eroare la autentificare: " : "Ошибка входа: ") + ((err && err.message) || c));
+  });
+}
+
+// --- блок «Привет, Имя» над баннером (только для вошедшего клиента) ---
+var _gaMe = { uid: null, at: 0, orders: [], name: "", loading: false, html: "" };
+function gaMeUser() {
+  var u = (typeof fbAuth !== "undefined" && fbAuth) ? fbAuth.currentUser : null;
+  if (!u || !u.email) return null;
+  if (GA_STAFF_EMAILS.indexOf(String(u.email).toLowerCase()) >= 0) return null;
+  return u;
+}
+function gaMeLoad(u) {
+  if (_gaMe.loading || typeof fbDb === "undefined" || !fbDb) return;
+  _gaMe.loading = true;
+  var pOrders = fbDb.collection("orders").where("email", "==", u.email).get()
+    .then(function(snap) {
+      var arr = [];
+      snap.forEach(function(d) { var x = d.data() || {}; arr.push(x); });
+      arr.sort(function(a, b) { return String(b.createdAt || "").localeCompare(String(a.createdAt || "")); });
+      return arr;
+    }).catch(function() { return []; });
+  var pUser = fbDb.collection("users").doc(u.uid).get()
+    .then(function(d) { return (d.exists && d.data()) ? d.data() : {}; }).catch(function() { return {}; });
+  Promise.all([pOrders, pUser]).then(function(r) {
+    _gaMe.orders = Array.isArray(r[0]) ? r[0] : [];
+    _gaMe.name = (r[1] && r[1].name) || u.displayName || String(u.email).split("@")[0];
+    _gaMe.uid = u.uid; _gaMe.at = Date.now(); _gaMe.loading = false; _gaMe.html = "";
+    gaMeRender();
+  });
+}
+function gaMeTick() {
+  var u = gaMeUser();
+  var box = document.getElementById("ga-me");
+  if (!box) return;
+  if (!u) { if (box.style.display !== "none") { box.style.display = "none"; box.innerHTML = ""; _gaMe.html = ""; } _gaMe.uid = null; return; }
+  if (_gaMe.uid !== u.uid || Date.now() - _gaMe.at > 120000) { gaMeLoad(u); return; }
+  gaMeRender();
+}
+function gaMeItemOk(id) {
+  if (id < 0) { var p = GA_PACK_BY_ID[String(id)]; return !!(p && !p.off && gaPackCalc(p).ok); }
+  var f = null;
+  for (var i = 0; i < FISH.length; i++) { if (FISH[i].id == id) { f = FISH[i]; break; } }
+  if (!f || !(Number(getPrice(id)) > 0)) return false;
+  var st = (typeof getStockData === "function") ? (getStockData() || {}) : {};
+  if (st[String(id)] === false) return false;
+  if (typeof _deletedCardIds !== "undefined" && _deletedCardIds[String(id)]) return false;
+  return true;
+}
+function gaMeName(id) {
+  if (id < 0) { var p = GA_PACK_BY_ID[String(id)]; return p ? ((gaIsRo() ? "Set pentru " : "Набор на ") + p.vol + " л") : ""; }
+  for (var i = 0; i < FISH.length; i++) { if (FISH[i].id == id) return String(FISH[i].name).split(" (")[0]; }
+  return "";
+}
+function gaMeImg(id) {
+  if (id < 0) { var p = GA_PACK_BY_ID[String(id)]; return p ? gaPackImg(gaPackCalc(p)) : ""; }
+  return gaPackFishImg(id);
+}
+function gaMeAddOne(id) {
+  if (id < 0) { gaPackAdd(id); return; }
+  if (typeof setManualQty === "function") setManualQty(id, (Number(cart[id]) || 0) + 1);
+  else { cart[id] = (Number(cart[id]) || 0) + 1; updBadge(); }
+  var ab = document.getElementById("ab" + id);
+  if (ab) { ab.className = "abtn in"; }
+  var inp = document.getElementById("qv" + id); if (inp && inp.tagName === "INPUT") inp.value = cart[id] || 0;
+  showToast(gaIsRo() ? "Adăugat în coș" : "Добавлено в корзину");
+}
+function gaMeRepeat() {
+  var last = null;
+  for (var i = 0; i < _gaMe.orders.length; i++) {
+    var it = _gaMe.orders[i].itemsData;
+    if (Array.isArray(it) && it.length) { last = it; break; }
+  }
+  if (!last) return;
+  var added = 0, skipped = 0;
+  last.forEach(function(x) {
+    if (!x || typeof x !== "object") return;
+    var id = parseInt(x.id, 10), q = parseInt(x.qty, 10) || 1;
+    if (isNaN(id)) return;
+    if (!gaMeItemOk(id)) { skipped++; return; }
+    var n = (Number(cart[id]) || 0) + q;
+    if (id > 0 && typeof setManualQty === "function") setManualQty(id, n); else cart[id] = n;
+    var ab = document.getElementById("ab" + id); if (ab) ab.className = "abtn in";
+    var inp = document.getElementById("qv" + id); if (inp && inp.tagName === "INPUT") inp.value = cart[id] || 0;
+    added++;
+  });
+  updBadge();
+  var ro = gaIsRo();
+  if (added) {
+    showToast(skipped ? (ro ? "Adăugat. Unele produse nu sunt în stoc" : "Добавлено. Часть товаров сейчас нет в наличии") : (ro ? "Comanda a fost adăugată în coș" : "Прошлый заказ добавлен в корзину"));
+    openCart();
+  } else {
+    showToast(ro ? "Produsele din ultima comandă nu sunt în stoc acum" : "Товаров из прошлого заказа сейчас нет в наличии");
+  }
+}
+function gaMeRender() {
+  var box = document.getElementById("ga-me");
+  var u = gaMeUser();
+  if (!box || !u || _gaMe.uid !== u.uid) return;
+  var ro = gaIsRo(), orders = _gaMe.orders;
+  // накопительная скидка — как в кабинете: по сумме выполненных заказов
+  var spent = 0, done = 0;
+  orders.forEach(function(o) { if (o.status === "completed") { spent += Number(o.total) || 0; done++; } });
+  var tier = (typeof getLoyaltyTier === "function") ? getLoyaltyTier(spent) : null;
+  var next = (typeof getNextTier === "function") ? getNextTier(spent) : null;
+  var myDisc = (typeof window._gaDbDisc === "number") ? window._gaDbDisc : 0;
+  var showDisc = Math.max(myDisc, tier ? tier.discount : 0);
+  var h = '<div class="ga-me-top"><div><span class="ga-me-hi">' + (ro ? "Bună, " : "Привет, ") + gaPackEsc(String(_gaMe.name).split(" ")[0]) + '</span></div>'
+    + '<div style="display:flex;align-items:center;gap:12px">'
+    + (showDisc > 0 ? '<span class="ga-me-chip">' + (ro ? "Reducerea dvs. " : "Ваша скидка ") + showDisc + '%</span>' : '')
+    + '<button type="button" class="ga-me-acc" data-me="acc">' + (ro ? "Contul meu →" : "Мой кабинет →") + '</button></div></div>';
+  // левая колонка: прогресс и повтор заказа
+  var lc = '<div class="ga-me-card">';
+  if (next) {
+    var pct = Math.min(100, Math.round(spent / next.threshold * 100));
+    lc += '<div class="ga-me-l">' + (ro ? "Reducere cumulativă: până la " : "Накопительная скидка: до ") + '<b>' + next.label + '</b> '
+      + (ro ? "mai rămân " : "осталось ") + '<b>' + Math.max(0, next.threshold - spent) + ' MDL</b></div>'
+      + '<div class="ga-me-bar"><i style="width:' + pct + '%"></i></div>'
+      + '<div class="ga-me-l">' + (ro ? "Cumpărat pentru " : "Куплено на ") + spent + ' MDL</div>';
+  } else if (tier) {
+    lc += '<div class="ga-me-l">' + (ro ? "Aveți reducerea cumulativă maximă: " : "У вас максимальная накопительная скидка: ") + '<b>' + tier.label + '</b></div>';
+  }
+  var toGift = 3 - (done % 3);
+  if (done > 0 && done % 3 === 0) lc += '<div class="ga-me-gift ok">🎁 ' + (ro ? "Cu comanda următoare — 100 g hrană cadou" : "Подарок: 100 г корма — заберите со следующим заказом") + '</div>';
+  else lc += '<div class="ga-me-gift">🎁 ' + (ro ? "Comanda " + (done % 3 + 1) + " din 3 — la a 3-a, 100 g hrană cadou" : "Заказ " + (done % 3 + 1) + " из 3 — на третьем 100 г корма в подарок") + (toGift === 1 ? (ro ? " (chiar acum!)" : " (уже этот!)") : "") + '</div>';
+  var hasLast = orders.some(function(o) { return Array.isArray(o.itemsData) && o.itemsData.length; });
+  lc += '<button type="button" class="ga-me-rep" data-me="repeat"' + (hasLast ? '' : ' disabled') + '>' + (ro ? "Repetă ultima comandă" : "Повторить последний заказ") + '</button></div>';
+  // правая колонка: вы покупали
+  var seen = {}, bought = [];
+  orders.forEach(function(o) {
+    (Array.isArray(o.itemsData) ? o.itemsData : []).forEach(function(x) {
+      var id = x && parseInt(x.id, 10);
+      if (isNaN(id) || seen[id] || !gaMeName(id)) return;
+      seen[id] = 1; bought.push(id);
+    });
+  });
+  var rc = '<div class="ga-me-card"><div class="ga-me-h"><span>' + (ro ? "Ați cumpărat" : "Вы покупали") + '</span></div>';
+  if (!bought.length) rc += '<div class="ga-me-l">' + (ro ? "Aici vor apărea produsele din comenzile dvs." : "Здесь появятся товары из ваших заказов") + '</div>';
+  bought.slice(0, 5).forEach(function(id) {
+    var ok = gaMeItemOk(id), img = gaMeImg(id);
+    rc += '<div class="ga-me-row"><span class="ga-me-th">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</span>'
+      + '<span class="ga-me-n"><b>' + gaPackEsc(gaMeName(id)) + '</b><span>' + (ok ? (Number(getPrice(id)) || 0) + ' MDL' : (ro ? "nu este în stoc" : "нет в наличии")) + '</span></span>'
+      + '<button type="button" class="ga-me-plus" data-me="add" data-id="' + id + '"' + (ok ? '' : ' disabled') + ' aria-label="+">' + (ok ? '+' : '—') + '</button></div>';
+  });
+  rc += '</div>';
+  // новинки недели
+  var news = [];
+  for (var i = 0; i < FISH.length && news.length < 10; i++) {
+    var f = FISH[i];
+    if (!f || f.id <= 0) continue;
+    var cats = Array.isArray(f.cats) ? f.cats : [f.cat];
+    if (cats.indexOf("Новинки") < 0) continue;
+    if (!document.getElementById("card" + f.id) || !gaMeItemOk(f.id)) continue;
+    news.push(f.id);
+  }
+  var nc = '';
+  if (news.length) {
+    nc = '<div class="ga-me-new"><div class="ga-me-h"><span>' + (ro ? "Noutățile săptămânii" : "Новинки недели") + '</span><button type="button" data-me="allnew">' + (ro ? "Toate noutățile →" : "Все новинки →") + '</button></div><div class="ga-me-strip">';
+    news.forEach(function(id) {
+      var img = gaMeImg(id);
+      nc += '<div class="ga-me-nc"><span class="ga-me-ni">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<em>NEW</em></span>'
+        + '<span class="ga-me-nb"><span><b>' + gaPackEsc(gaMeName(id)) + '</b><span>' + (Number(getPrice(id)) || 0) + ' MDL</span></span>'
+        + '<button type="button" class="ga-me-plus" data-me="add" data-id="' + id + '" aria-label="+">+</button></span></div>';
+    });
+    nc += '</div></div>';
+  }
+  var out = h + '<div class="ga-me-grid">' + lc + rc + '</div>' + nc;
+  if (out === _gaMe.html) return;
+  _gaMe.html = out;
+  box.innerHTML = out;
+  box.style.display = "";
+  if (!box._gaBound) {
+    box._gaBound = true;
+    box.addEventListener("click", function(e) {
+      var b = e.target.closest ? e.target.closest("[data-me]") : null;
+      if (!b || b.disabled) return;
+      var a = b.getAttribute("data-me");
+      if (a === "repeat") gaMeRepeat();
+      else if (a === "add") gaMeAddOne(parseInt(b.getAttribute("data-id"), 10));
+      else if (a === "acc") { if (typeof openAccount === "function") openAccount(); }
+      else if (a === "allnew") { if (typeof gaGo === "function") gaGo("new", null); }
+    });
+  }
+}
+// после оформления заказа — обновить данные блока (новый заказ попадёт в «Вы покупали»)
+window.addEventListener("load", function() {
+  var ok = document.getElementById("okscreen");
+  if (ok && window.MutationObserver) {
+    new MutationObserver(function() { if (ok.classList.contains("show")) { _gaMe.at = 0; setTimeout(gaMeTick, 2500); } })
+      .observe(ok, { attributes: true, attributeFilter: ["class"] });
+  }
+});
+
 // ===== запуск =====
 gaPacksSet(GA_PACKS_DEFAULT);
 (function() {
@@ -12509,6 +12812,16 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("для аквариума", "pentru acvariu de");
     window.i18nSet("Набор для аквариума", "Set pentru acvariu de");
     window.i18nSet("Все рыбки", "Toți peștii");
+    window.i18nSet("Войти через Google", "Intră cu Google");
+    window.i18nSet("или по email", "sau cu email");
+    window.i18nSet("Входя через Google, вы соглашаетесь с", "Intrând cu Google, sunteți de acord cu");
+    window.i18nSet("Политикой конфиденциальности", "Politica de confidențialitate");
+    window.i18nSet("Заказы и скидка хранятся в защищённой базе — видны с любого устройства.", "Comenzile și reducerea sunt păstrate într-o bază securizată — vizibile de pe orice dispozitiv.");
+    window.i18nSet("Повторить последний заказ", "Repetă ultima comandă");
+    window.i18nSet("Вы покупали", "Ați cumpărat");
+    window.i18nSet("Новинки недели", "Noutățile săptămânii");
+    window.i18nSet("Все новинки →", "Toate noutățile →");
+    window.i18nSet("Мой кабинет", "Contul meu");
     window.i18nSet("Рыба приедет", "Peștii ajung");
     window.i18nSet("живой", "vii");
     window.i18nSet("Кислород в пакете", "Oxigen în pungă");
@@ -12542,7 +12855,7 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("Для аквариума", "Pentru acvariu de");
     window.i18nSet("скидка", "reducere");
   }
-  var run = function() { try { gaPacksLoad(); gaPacksRender(); } catch(e) {} try { gaBarUpdate(); } catch(e) {} try { gaHeadH(); gaNavRender(); } catch(e) {} };
+  var run = function() { try { gaPacksLoad(); gaPacksRender(); } catch(e) {} try { gaBarUpdate(); } catch(e) {} try { gaHeadH(); gaNavRender(); } catch(e) {} try { gaMeTick(); } catch(e) {} };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
   // цены, фото и карточки из Firebase приходят позже (на медленном интернете — сильно позже),
   // поэтому проверяем периодически; перерисовка только если что-то изменилось
