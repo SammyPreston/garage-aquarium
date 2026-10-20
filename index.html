@@ -1793,6 +1793,13 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-mbar-info b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span{font-size:11.5px;color:#FFB020;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span.ok{color:#4ade80}
+/* телефон: на компьютере — в верхней строке (шапка остаётся в одну строку), на телефоне — как был, в шапке */
+.ga-rib-ph{color:#a0bcd4;text-decoration:none;white-space:nowrap}
+.ga-rib-ph b{color:#2EE6C5;font-weight:700}
+.ga-rib-ph i{font-style:normal;color:#8fa9b5}
+.ga-rib-ph:hover b{text-decoration:underline}
+@media(min-width:761px){header .ga-phone{display:none !important}}
+@media(max-width:760px){.ga-rib-ph{display:none}}
 /* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
 .ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
 .ga-gbtn:hover{background:#f2f5f7}
@@ -1992,6 +1999,7 @@ function buildNewbiesSection(){}
   <span style="font-size:11px;font-family:'DM Sans',sans-serif;color:#a0bcd4;line-height:1.8;display:flex;flex-wrap:wrap;justify-content:center;gap:12px">
     <span>&#128666; <b style="color:#4fc3f7">Кишинёв</b> от <b style="color:#ffd54f">350 MDL</b> — бесплатно</span>
     <span>&#127474;&#127465; <b style="color:#4fc3f7">По Молдове</b> от <b style="color:#ffd54f">550 MDL</b> — бесплатно</span>
+    <a class="ga-rib-ph" href="tel:+37378707118">&#128222; <b>+373 78 707 118</b> <i>· Пн–Вс 10:00–20:00</i></a>
   </span>
   <span class="run-car" aria-hidden="true">&#128666;</span>
 </div>
@@ -13034,6 +13042,7 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("для аквариума", "pentru acvariu de");
     window.i18nSet("Набор для аквариума", "Set pentru acvariu de");
     window.i18nSet("Все рыбки", "Toți peștii");
+    window.i18nSet("· Пн–Вс 10:00–20:00", "· Lun–Dum 10:00–20:00");
     window.i18nSet("Войти через Google", "Intră cu Google");
     window.i18nSet("или по email", "sau cu email");
     window.i18nSet("Входя через Google, вы соглашаетесь с", "Intrând cu Google, sunteți de acord cu");
