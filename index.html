@@ -1868,7 +1868,11 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-me-n span s{color:#6f8f99;margin-left:3px}
 .ga-me-ngrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .ga-me-ngrid .ga-me-nc{flex:none;display:flex;flex-direction:column}
-.ga-me-ngrid .ga-me-ni{aspect-ratio:16/10}
+.ga-me-ngrid .ga-me-ni{display:block;width:100%;aspect-ratio:4/3;overflow:hidden;flex:0 0 auto}
+.ga-me-ngrid .ga-me-ni img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ga-me-ngrid .ga-me-nb{flex:1 1 auto}
+.ga-me-ngrid .ga-me-nb b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px;max-height:none}
+.ga-me-ngrid .ga-me-nbtn{margin-top:auto}
 .ga-me-ngrid .ga-me-nb{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:9px}
 .ga-me-ngrid .ga-me-nb b{font-size:13px;max-height:34px}
 .ga-me-np{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;color:#fff}
