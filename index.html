@@ -1793,6 +1793,21 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-mbar-info b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span{font-size:11.5px;color:#FFB020;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span.ok{color:#4ade80}
+/* ══ ЭТАП 3 (20.10.2026): карточки товаров — одна главная кнопка ══ */
+/* звёзды-оценки были условными (без отзывов, хранились в браузере) — для покупателей скрыты; код оценок не удалён */
+.card .stars-row{display:none !important}
+/* номер товара «No.24» нужен только в режиме админа */
+.grid:not(.admon) .card .cnum{display:none}
+/* пока товара нет в корзине — только «В корзину» на всю ширину; после добавления вместо неё счётчик −/+ */
+.cact:has(.abtn):not(:has(.abtn.in)):not(:has(.qrow input:focus)) .qrow{display:none !important}
+.cact:not(:has(.abtn.in)) .abtn{flex:1 1 100% !important;width:100% !important;min-height:40px}
+.cact:has(.abtn.in) .abtn,.cact:has(.qrow input:focus) .abtn{display:none !important}
+.cact:has(.abtn.in) .qrow,.cact:has(.qrow input:focus) .qrow{flex:1 1 100% !important;width:100% !important;justify-content:space-between !important;border-color:rgba(34,197,94,.55) !important;background:rgba(34,197,94,.08) !important;min-height:40px}
+.cact:has(.abtn.in) .qrow button{color:#4ade80}
+/* окно товара: «Добавить» — тоже главная (коралл), после добавления — зелёная */
+.fm-add{background:var(--ga-cta) !important;border-color:var(--ga-cta) !important;color:var(--ga-cta-t) !important;font-weight:600}
+.fm-add:hover{background:var(--ga-cta-h) !important;border-color:var(--ga-cta-h) !important}
+.fm-add.in{background:rgba(34,197,94,.14) !important;border-color:rgba(34,197,94,.6) !important;color:#4ade80 !important}
 </style>
 
 
