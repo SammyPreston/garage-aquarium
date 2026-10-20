@@ -12,6 +12,22 @@ const FIELDS = ["name", "phone", "city", "address", "items", "total", "status",
   "deliveryDate", "deliveryTime", "urgency", "delivery", "payment", "note", "remind"];
 const SEP = "────────────";
 
+// Этап 2 (правила Firestore): заказы может читать только админ и служебный аккаунт отчётов.
+// Функция входит под reports@garageaquarium.shop (пароль — в переменной Netlify REPORT_PASSWORD).
+// Если пароль не задан, читаем без входа, как раньше (работает, пока правила не включены).
+const REPORT_EMAIL = process.env.REPORT_EMAIL || "reports@garageaquarium.shop";
+async function getIdToken() {
+  const pass = process.env.REPORT_PASSWORD;
+  if (!pass) return null;
+  const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: REPORT_EMAIL, password: pass, returnSecureToken: true })
+  });
+  if (!r.ok) throw new Error("Вход аккаунта отчётов не удался: " + r.status + " " + (await r.text()).slice(0, 200));
+  const j = await r.json();
+  return j && j.idToken ? j.idToken : null;
+}
+
 // ---------- Firestore REST ----------
 function val(v) {
   if (!v || typeof v !== "object") return null;
@@ -45,7 +61,10 @@ export async function loadOrders() {
       limit: 500
     }
   };
-  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const headers = { "Content-Type": "application/json" };
+  const idToken = await getIdToken();
+  if (idToken) headers.Authorization = "Bearer " + idToken;
+  const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
   if (!r.ok) throw new Error("Firestore " + r.status + ": " + (await r.text()).slice(0, 300));
   const j = await r.json();
   const rows = Array.isArray(j) ? j : [];

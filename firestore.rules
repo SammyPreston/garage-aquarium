@@ -1,0 +1,58 @@
+// Правила доступа Firestore для Garage Aquarium (этап 2, безопасность).
+// Вставляются вручную: Firebase Console → Firestore Database → Rules → Publish.
+// Netlify эти правила НЕ публикует — файл лежит в репозитории как копия и история изменений.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function myEmail()  { return signedIn() ? request.auth.token.email : ''; }
+    function isAdmin()  { return signedIn() && request.auth.token.email == 'admin@garageaquarium.shop'; }
+    function isReports(){ return signedIn() && request.auth.token.email == 'reports@garageaquarium.shop'; }
+
+    // ── Витрина: читают все посетители, меняет только админ ──
+    match /prices/{id}         { allow read: if true; allow write: if isAdmin(); }
+    match /photos/{id}         { allow read: if true; allow write: if isAdmin(); }
+    match /extra_cards/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /card_edits/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /card_discounts/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /deleted_cards/{id}  { allow read: if true; allow write: if isAdmin(); }
+    match /new_flags/{id}      { allow read: if true; allow write: if isAdmin(); }
+    match /stock/{id}          { allow read: if true; allow write: if isAdmin(); }
+    match /start_packs/{id}    { allow read: if true; allow write: if isAdmin(); }
+
+    // ── Заказы: оформить может любой (и гость); видит свои — клиент; все — админ и отчёт ──
+    match /orders/{id} {
+      allow create: if true;
+      allow read: if isAdmin() || isReports()
+                  || (signedIn() && resource.data.email == myEmail());
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Клиенты: свой профиль — клиент (без права менять скидку), все — админ ──
+    match /users/{uid} {
+      allow read: if isAdmin()
+                  || (signedIn() && (request.auth.uid == uid || resource.data.email == myEmail()));
+      allow create: if isAdmin()
+                  || (signedIn() && request.auth.uid == uid
+                      && (!('discount' in request.resource.data) || request.resource.data.discount == 0));
+      allow update: if isAdmin()
+                  || (signedIn() && request.auth.uid == uid
+                      && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['discount']));
+      allow delete: if isAdmin()
+                  || (signedIn() && (request.auth.uid == uid || resource.data.email == myEmail()));
+    }
+
+    // ── Запрос на удаление данных: отправить может любой, читает админ ──
+    match /deletion_requests/{id} { allow create: if true; allow read, update, delete: if isAdmin(); }
+
+    // ── Только админ: склад, накладные, списания, подарки ──
+    match /invoices/{id}      { allow read, write: if isAdmin(); }
+    match /writeoffs/{id}     { allow read, write: if isAdmin(); }
+    match /inventory_log/{id} { allow read, write: if isAdmin(); }
+    match /gifts/{id}         { allow read, write: if isAdmin(); }
+
+    // ── Всё остальное: только админ ──
+    match /{document=**} { allow read, write: if isAdmin(); }
+  }
+}
