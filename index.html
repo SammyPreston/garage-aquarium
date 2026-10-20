@@ -1793,6 +1793,33 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-mbar-info b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span{font-size:11.5px;color:#FFB020;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span.ok{color:#4ade80}
+/* ══ ЭТАП 4 (20.10.2026): навигация каталога — один слой: поиск + чипы, закреплены над списком ══ */
+/* старые слои (8 больших разделов, 14 карточек категорий, выпадающий список на телефоне) скрыты, но остаются в коде:
+   чипы вызывают те же функции (switchMainTab, gaCat) */
+.sec-cards{height:0 !important;min-height:0 !important;overflow:hidden !important;margin:0 !important;padding:0 !important;border:0 !important;opacity:0 !important;pointer-events:none !important}
+#swipe-hint,#ga-cats-head,#ga-cats,.ga-cat-selwrap{display:none !important}
+.ga-sec-head#ga-catalog{position:sticky;top:var(--ga-head-h,0px);z-index:40;flex-wrap:wrap;gap:8px 10px;margin-top:10px !important;padding:10px 0 9px !important;border-top:0 !important;border-bottom:1px solid #1E3F4D;background:rgba(11,26,34,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ga-sec-head#ga-catalog > h2{display:none}
+#ga-catalog .ga-filters{order:1;flex:1 1 300px;min-width:0 !important;justify-content:flex-start}
+#ga-catalog .srchbox{max-width:none !important}
+#ga-catalog .ga-pick-btn{order:2;margin:0 !important;padding:9px 16px}
+.ga-nav-chips{order:3;flex:1 1 100%;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ga-nc-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:1px 0}
+.ga-nc-row::-webkit-scrollbar{display:none}
+.ga-nc{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:100px;border:1px solid #1E3F4D;background:#122B36;color:#EAF4F7;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.ga-nc:hover{border-color:rgba(46,230,197,.6)}
+.ga-nc i{font-style:normal;font-size:11px;color:#9FC4D0}
+.ga-nc.on{background:#2EE6C5;border-color:#2EE6C5;color:#0B1A22;font-weight:600}
+.ga-nc.on i{color:#0B1A22}
+.ga-nc-sub .ga-nc{height:30px;padding:0 12px;font-size:12px;background:transparent}
+.ga-nc-sub .ga-nc.on{background:rgba(46,230,197,.16);color:#2EE6C5;border-color:rgba(46,230,197,.6)}
+@media(max-width:640px){
+  .ga-sec-head#ga-catalog{padding:8px 0 7px !important;gap:6px}
+  #ga-catalog .ga-filters{flex:1 1 0}
+  #ga-catalog .ga-pick-btn{width:auto !important;padding:0 12px;height:40px;font-size:12px}
+  .ga-nc{height:32px;padding:0 12px;font-size:12.5px}
+  .ga-nc-sub .ga-nc{height:28px}
+}
 /* ══ ЭТАП 3 (20.10.2026): карточки товаров — одна главная кнопка ══ */
 /* звёзды-оценки были условными (без отзывов, хранились в браузере) — для покупателей скрыты; код оценок не удалён */
 .card .stars-row{display:none !important}
@@ -12289,6 +12316,87 @@ function gaBarUpdate() {
   };
 })();
 
+// ===== ЭТАП 4: навигация каталога — чипы разделов и категорий рыб над списком =====
+// Чипы ничего не фильтруют сами: раздел — через switchMainTab (как большие карточки разделов),
+// категория рыб — нажатием на соответствующую (скрытую) карточку категории, то есть через gaCat.
+var GA_SECS = [["fish", "Рыбки"], ["plants", "Растения"], ["food", "Корм"], ["meds", "Лекарства"],
+  ["discount", "Скидки"], ["new", "Новинки"], ["equip", "Оборудование"], ["decor", "Декор"]];
+var _gaNavHtml = "", _gaNavCat = -1;
+function gaHeadH() {
+  var h = document.querySelector("header");
+  var v = h ? Math.round(h.getBoundingClientRect().height) : 0;
+  document.documentElement.style.setProperty("--ga-head-h", v + "px");
+}
+function gaNavCount(key) {
+  var b = document.getElementById("sec-btn-" + key);
+  if (!b) return -1;
+  var m = /(\d+)/.exec(b.textContent || "");
+  return m ? parseInt(m[1], 10) : -1;
+}
+function gaNavToGrid() {
+  // если пользователь уже пролистал вниз — возвращаем к началу списка (под закреплённую панель)
+  var grid = document.getElementById("grid"), bar = document.getElementById("ga-catalog");
+  if (!grid || !bar) return;
+  var hh = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--ga-head-h"), 10) || 0;
+  var y = grid.getBoundingClientRect().top + window.pageYOffset - hh - bar.offsetHeight - 6;
+  if (window.pageYOffset > y) window.scrollTo({ top: y, behavior: "smooth" });
+}
+function gaNavRender() {
+  var bar = document.getElementById("ga-catalog");
+  if (!bar) return;
+  var host = document.getElementById("ga-nav-chips");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "ga-nav-chips"; host.className = "ga-nav-chips";
+    bar.appendChild(host);
+    host.addEventListener("click", function(e) {
+      var b = e.target.closest ? e.target.closest("[data-sec],[data-cat]") : null;
+      if (!b) return;
+      if (b.hasAttribute("data-sec")) {
+        var k = b.getAttribute("data-sec"), btn = document.getElementById("sec-btn-" + k);
+        if (btn && typeof switchMainTab === "function") switchMainTab(btn, k);
+        _gaNavCat = -1;
+      } else {
+        var i = parseInt(b.getAttribute("data-cat"), 10);
+        var cats = document.querySelectorAll("#ga-cats .ga-cat");
+        if (cats[i]) { _gaNavCat = i; cats[i].click(); }
+      }
+      _gaNavHtml = "";
+      gaNavRender();
+      setTimeout(gaNavToGrid, 30);
+    });
+  }
+  var active = "";
+  GA_SECS.forEach(function(sc) { var b = document.getElementById("sec-btn-" + sc[0]); if (b && b.classList.contains("active")) active = sc[0]; });
+  if (active !== "fish") _gaNavCat = -1;
+  var h = '<div class="ga-nc-row">';
+  GA_SECS.forEach(function(sc) {
+    if (!document.getElementById("sec-btn-" + sc[0])) return;
+    var n = gaNavCount(sc[0]);
+    if (n === 0 && active !== sc[0]) return; // пустые разделы (например, «Декор: 0») не показываем
+    h += '<button type="button" class="ga-nc' + (active === sc[0] ? ' on' : '') + '" data-sec="' + sc[0] + '"><span>' + sc[1] + '</span>' + (n > 0 ? '<i>' + n + '</i>' : '') + '</button>';
+  });
+  h += '</div>';
+  if (active === "fish") {
+    var cats = document.querySelectorAll("#ga-cats .ga-cat");
+    if (cats.length) {
+      h += '<div class="ga-nc-row ga-nc-sub"><button type="button" class="ga-nc' + (_gaNavCat < 0 ? ' on' : '') + '" data-sec="fish"><span>Все рыбки</span></button>';
+      for (var i = 0; i < cats.length; i++) {
+        var t = (cats[i].querySelector(".ga-cat-t") || cats[i]).textContent.trim();
+        h += '<button type="button" class="ga-nc' + (_gaNavCat === i ? ' on' : '') + '" data-cat="' + i + '"><span>' + gaPackEsc(t) + '</span></button>';
+      }
+      h += '</div>';
+    }
+  }
+  if (h === _gaNavHtml) return;
+  _gaNavHtml = h;
+  host.innerHTML = h;
+  if (typeof applyI18n === "function") applyI18n();
+}
+// большие карточки разделов могут переключаться и из других мест (меню «Новинки», «Скидки») — следим за ними
+document.addEventListener("click", function() { setTimeout(function() { try { gaNavRender(); } catch (e) {} }, 0); });
+window.addEventListener("resize", function() { try { gaHeadH(); } catch (e) {} });
+
 // ===== запуск =====
 gaPacksSet(GA_PACKS_DEFAULT);
 (function() {
@@ -12298,6 +12406,7 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("готовые наборы рыб — нажмите, чтобы увидеть состав", "seturi gata de pești — apăsați pentru a vedea conținutul");
     window.i18nSet("для аквариума", "pentru acvariu de");
     window.i18nSet("Набор для аквариума", "Set pentru acvariu de");
+    window.i18nSet("Все рыбки", "Toți peștii");
     window.i18nSet("Первый аквариум?", "Primul acvariu?");
     window.i18nSet("Подберём рыбок, которые уживутся", "Alegem peștii care se înțeleg între ei");
     window.i18nSet("Объём вашего аквариума", "Volumul acvariului dvs.");
@@ -12318,7 +12427,7 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("Для аквариума", "Pentru acvariu de");
     window.i18nSet("скидка", "reducere");
   }
-  var run = function() { try { gaPacksLoad(); gaPacksRender(); } catch(e) {} try { gaBarUpdate(); } catch(e) {} };
+  var run = function() { try { gaPacksLoad(); gaPacksRender(); } catch(e) {} try { gaBarUpdate(); } catch(e) {} try { gaHeadH(); gaNavRender(); } catch(e) {} };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
   // цены, фото и карточки из Firebase приходят позже (на медленном интернете — сильно позже),
   // поэтому проверяем периодически; перерисовка только если что-то изменилось
