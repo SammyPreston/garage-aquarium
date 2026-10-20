@@ -1883,6 +1883,16 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 #acc-email-show{font-size:13px;color:#EAF4F7;font-weight:600;padding:10px 12px;border-radius:12px;background:#122B36;border:1px solid #1E3F4D}
 @media(max-width:860px){.ga-me-ngrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.ga-me-top{flex-direction:column}.ga-me-tools{width:100%}.ga-me-cartb{margin-left:auto}.ga-me-acc{order:-1;padding-left:0;margin-right:auto}}
+/* ══ ЭТАП 7в: «Ждёте поставку?», «Приведите друга» ══ */
+.ga-me-extra{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.ga-me-wrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(30,63,77,.7)}
+.ga-me-wrow:last-child{border-bottom:0}
+.ga-me-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid rgba(46,230,197,.6);background:transparent;color:#2EE6C5;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.ga-me-ghost:hover{background:rgba(46,230,197,.1)}
+.ga-me-ghost.wide{width:100%;height:46px;margin-top:6px;font-size:14px}
+.ga-me-ref .ga-me-l{font-size:13px;line-height:1.45;color:#C9DDE3}
+.ga-ref-note{margin:8px 0;padding:8px 10px;border-radius:10px;background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.35);color:#FFD27A;font-size:12px}
+@media(max-width:860px){.ga-me-extra{grid-template-columns:1fr}}
 /* ══ ЭТАП 5 (20.10.2026): тексты и порядок блоков ══ */
 /* «Доставка» + «Почему мы» объединены в один блок «Рыба приедет живой»; старый блок «Почему» скрыт (остался в коде) */
 #ga-why{display:none !important}
@@ -4711,6 +4721,10 @@ async function sendOrder() {
       var _dbP = (_ud.exists && _ud.data()) ? (parseInt(_ud.data().discount) || 0) : 0;
       if (_dbP !== _persDisc) msg += "\u26A0\uFE0F " + L("Скидка клиента по базе", "Reducere client în baza de date") + ": " + _dbP + "% — " + L("проверьте сумму", "verificați suma") + "\n";
     }
+  } catch (e) {}
+  try {
+    var _ref = JSON.parse(localStorage.getItem("ga_ref") || "null");
+    if (_ref && _ref.code) msg += "\u{1F381} " + L("По приглашению", "Prin invitație") + (_ref.from ? " " + L("от", "de la") + " " + _ref.from : "") + " (" + L("код", "cod") + " " + _ref.code + "): " + L("другу −10% на первый заказ, пригласившему — 100 г корма", "prietenului −10% la prima comandă, celui care a invitat — 100 g hrană") + "\n";
   } catch (e) {}
   if (_persDisc > 0) msg += "\u{1F4B3} " + L("\u0421\u043A\u0438\u0434\u043A\u0430 \u043A\u043B\u0438\u0435\u043D\u0442\u0430", "Reducere client") + ": -" + _persDisc + "%\n";
   msg += "\u{1F4B0} " + L("\u0418\u0422\u041E\u0413\u041E", "TOTAL") + ": " + total + " MDL\n";
@@ -12862,6 +12876,8 @@ function gaMeBind(el) {
     else if (a === "acc") { if (typeof openAccount === "function") openAccount(); }
     else if (a === "cart") openCart();
     else if (a === "allnew") { if (typeof gaGo === "function") gaGo("new", null); }
+    else if (a === "notify") { if (typeof sendPreorder === "function") sendPreorder(id); }
+    else if (a === "share") gaMeShare();
   });
 }
 function gaMeRender() {
@@ -12875,7 +12891,9 @@ function gaMeRender() {
     + '<div class="ga-me-tools"><a class="ga-me-ic" href="' + GA_TG_URL + '" target="_blank" rel="noopener" aria-label="Telegram"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></a>'
     + '<button type="button" class="ga-me-cartb" data-me="cart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' + cs.sum + ' MDL</button>'
     + '<button type="button" class="ga-me-acc" data-me="acc">' + (ro ? "Contul meu" : "Кабинет") + '</button></div></div>';
-  var out = h + '<div class="ga-me-grid">' + gaMeStatusHtml(st) + gaMeBoughtHtml(st, 4) + '</div>' + gaMeNewHtml(st);
+  var extra = gaMeWaitHtml(st) + gaMeReferHtml();
+  var out = h + '<div class="ga-me-grid">' + gaMeStatusHtml(st) + gaMeBoughtHtml(st, 4) + '</div>' + gaMeNewHtml(st)
+    + (extra ? '<div class="ga-me-grid ga-me-extra">' + extra + '</div>' : '');
   if (out !== _gaMe.html) {
     _gaMe.html = out;
     box.innerHTML = out;
@@ -12916,6 +12934,88 @@ window.addEventListener("load", function() {
   var ok = document.getElementById("okscreen");
   if (ok && window.MutationObserver) {
     new MutationObserver(function() { if (ok.classList.contains("show")) { _gaMe.at = 0; setTimeout(gaMeTick, 2500); } })
+      .observe(ok, { attributes: true, attributeFilter: ["class"] });
+  }
+});
+
+// ===== ЭТАП 7в: «Ждёте поставку?» и «Приведите друга» (как во втором макете) =====
+var GA_SITE_URL = "https://garageaquariumshop.netlify.app/";
+// ссылка-приглашение: ?ref=<код>&from=<имя>. Скидку другу и подарок пригласившему
+// магазин даёт при подтверждении заказа — в сообщении о заказе будет строка о приглашении.
+(function() {
+  try {
+    var q = new URLSearchParams(location.search), code = q.get("ref");
+    if (code && /^[A-Za-z0-9]{4,16}$/.test(code)) {
+      var from = (q.get("from") || "").slice(0, 30);
+      localStorage.setItem("ga_ref", JSON.stringify({ code: code, from: from, at: new Date().toISOString() }));
+      setTimeout(function() {
+        showToast(gaIsRo() ? ((from ? from + " v-a invitat" : "Ați fost invitat") + ": −10% la prima comandă")
+                           : ((from ? from + " пригласил(а) вас" : "Вас пригласили") + ": −10% на первый заказ"));
+      }, 1500);
+    }
+  } catch (e) {}
+})();
+function gaRefGet() { try { var r = JSON.parse(localStorage.getItem("ga_ref") || "null"); return (r && r.code) ? r : null; } catch (e) { return null; } }
+function gaMyRefCode() { var u = gaMeUser(); return u ? String(u.uid).replace(/[^A-Za-z0-9]/g, "").slice(0, 8) : ""; }
+function gaMeWaitHtml(st) {
+  var ro = gaIsRo(), stock = (typeof getStockData === "function") ? (getStockData() || {}) : {};
+  var ids = [], seen = {};
+  var push = function(id) {
+    if (seen[id] || ids.length >= 3 || id <= 0) return;
+    if (stock[String(id)] !== false || !document.getElementById("card" + id) || !gaMeName(id)) return;
+    if (typeof _deletedCardIds !== "undefined" && _deletedCardIds[String(id)]) return;
+    seen[id] = 1; ids.push(id);
+  };
+  st.orders.forEach(function(o) { (Array.isArray(o.itemsData) ? o.itemsData : []).forEach(function(x) { push(parseInt(x && x.id, 10)); }); });
+  for (var i = 0; i < FISH.length && ids.length < 3; i++) { if (FISH[i]) push(FISH[i].id); }
+  if (!ids.length) return "";
+  var h = '<div class="ga-me-card ga-me-wait"><div class="ga-me-h"><span>' + (ro ? "Așteptați o livrare?" : "Ждёте поставку?") + '</span></div>';
+  ids.forEach(function(id) {
+    h += '<div class="ga-me-wrow"><span class="ga-me-n"><b>' + gaPackEsc(gaMeName(id)) + '</b><span>' + (ro ? "La comandă · vă anunțăm când apare" : "Под заказ · сообщим, когда появится") + '</span></span>'
+      + '<button type="button" class="ga-me-ghost" data-me="notify" data-id="' + id + '">' + (ro ? "Anunțați-mă" : "Сообщить") + '</button></div>';
+  });
+  return h + '</div>';
+}
+function gaMeReferHtml() {
+  var ro = gaIsRo();
+  if (!gaMyRefCode()) return "";
+  return '<div class="ga-me-card ga-me-ref"><div class="ga-me-h"><span>' + (ro ? "Invitați un prieten" : "Приведите друга") + '</span></div>'
+    + '<div class="ga-me-l">' + (ro ? "Prietenului — 10% la prima comandă, dvs. — 100 g hrană după cumpărătura lui." : "Другу — 10% на первый заказ, вам — 100 г корма после его покупки.") + '</div>'
+    + '<button type="button" class="ga-me-ghost wide" data-me="share"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>'
+    + (ro ? "Trimiteți linkul în Telegram" : "Отправить ссылку в Telegram") + '</button></div>';
+}
+function gaMeShare() {
+  var code = gaMyRefCode(); if (!code) return;
+  var first = String(_gaMe.name || "").split(" ")[0];
+  var link = GA_SITE_URL + "?ref=" + code + (first ? "&from=" + encodeURIComponent(first) : "");
+  var text = gaIsRo() ? "Îți recomand Garage Aquarium — pești de acvariu cu livrare în Moldova. Pe link — −10% la prima comandă:"
+                      : "Советую Garage Aquarium — аквариумные рыбки с доставкой по Молдове. По ссылке — −10% на первый заказ:";
+  window.open("https://t.me/share/url?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent(text), "_blank", "noopener");
+  try { var u = gaMeUser(); if (u && fbDb) fbDb.collection("users").doc(u.uid).update({ refCode: code }).catch(function() {}); } catch (e) {}
+}
+// приглашённому — пометка в корзине; после отправки заказа приглашение «использовано»
+window.addEventListener("load", function() {
+  if (typeof renderCart === "function") {
+    var _prevRC = renderCart;
+    renderCart = function() {
+      var r = _prevRC.apply(this, arguments);
+      try {
+        var ref = gaRefGet(), host = document.getElementById("stotal"), note = document.getElementById("ga-ref-note");
+        if (ref && ref.code !== gaMyRefCode() && host) {
+          if (!note) {
+            note = document.createElement("div"); note.id = "ga-ref-note"; note.className = "ga-ref-note";
+            var row = host.closest(".stotal") || host.parentNode;
+            if (row && row.parentNode) row.parentNode.insertBefore(note, row.nextSibling);
+          }
+          note.textContent = gaIsRo() ? "🎁 Reducerea de 10% prin invitație o aplicăm la confirmarea comenzii" : "🎁 Скидку 10% по приглашению учтём при подтверждении заказа";
+        } else if (note) note.remove();
+      } catch (e) {}
+      return r;
+    };
+  }
+  var ok = document.getElementById("okscreen");
+  if (ok && window.MutationObserver) {
+    new MutationObserver(function() { if (ok.classList.contains("show")) { try { localStorage.removeItem("ga_ref"); } catch (e) {} } })
       .observe(ok, { attributes: true, attributeFilter: ["class"] });
   }
 });
