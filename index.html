@@ -1820,7 +1820,7 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-me-h a,.ga-me-h button{font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;font-size:12.5px;color:#2EE6C5;background:none;border:none;cursor:pointer;text-decoration:none}
 .ga-me-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(30,63,77,.7)}
 .ga-me-row:last-child{border-bottom:0}
-.ga-me-th{flex:0 0 40px;height:40px;border-radius:9px;background:#122B36;overflow:hidden}
+.ga-me-th{flex:0 0 40px;height:40px;border-radius:9px;background-color:#122B36;overflow:hidden}
 .ga-me-th img{width:100%;height:100%;object-fit:cover;display:block}
 .ga-me-n{flex:1;min-width:0}
 .ga-me-n b{display:block;font-size:13px;color:#EAF4F7;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1841,6 +1841,48 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-me-nc .ga-me-plus{flex:0 0 34px;height:34px;font-size:20px}
 @media(max-width:860px){.ga-me-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.ga-me{padding:13px 12px;border-radius:16px}.ga-me-hi{font-size:19px}.ga-me-nc{flex-basis:132px}}
+/* ══ ЭТАП 7б: блок клиента и кабинет — ближе к макету ══ */
+.ga-me-top{align-items:flex-start}
+.ga-me-sub{font-size:12px;color:#9FC4D0;margin-top:2px}
+.ga-me-tools{display:flex;align-items:center;gap:8px}
+.ga-me-ic{width:42px;height:42px;border-radius:12px;border:1px solid rgba(46,230,197,.55);color:#2EE6C5;display:flex;align-items:center;justify-content:center}
+.ga-me-cartb{display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 13px;border-radius:12px;border:1px solid #1E3F4D;background:#122B36;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.ga-me-acc{height:42px;padding:0 6px}
+.ga-me-status{border:1px solid rgba(46,230,197,.5);background:linear-gradient(160deg,rgba(18,43,54,.95),rgba(11,26,34,.9))}
+.ga-me-st-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+.ga-me-badge{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:6px;background:#22C55E;color:#06210f}
+.ga-me-badge.off{background:#1E3F4D;color:#9FC4D0}
+.ga-me-st-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#9FC4D0;margin-bottom:10px}
+.ga-me-st-row b{color:#4ade80;font-weight:600;text-align:right}
+.ga-me-ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin:0 0 10px}
+.ga-me-ladder span{display:flex;flex-direction:column;align-items:center;padding:7px 4px;border-radius:10px;background:rgba(11,26,34,.7);border:1px solid #1E3F4D}
+.ga-me-ladder b{font-family:'Oswald',sans-serif;font-size:16px;color:#9FC4D0}
+.ga-me-ladder i{font-style:normal;font-size:10.5px;color:#6f8f99}
+.ga-me-ladder span.past b{color:#EAF4F7}
+.ga-me-ladder span.on{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.6)}
+.ga-me-ladder span.on b{color:#4ade80}.ga-me-ladder span.on i{color:#4ade80}
+.ga-me-gift{gap:10px;background:rgba(11,26,34,.8);border-color:#1E3F4D;color:#EAF4F7;font-size:12.5px}
+.ga-me-gift b{color:#FFB020}
+.ga-me-rep{display:flex;align-items:center;justify-content:center;gap:8px;text-transform:none;letter-spacing:.3px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;height:50px}
+.ga-me-bought .ga-me-th.ga-pk-bg{background-color:#122B36}
+.ga-me-n span s{color:#6f8f99;margin-left:3px}
+.ga-me-ngrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ga-me-ngrid .ga-me-nc{flex:none;display:flex;flex-direction:column}
+.ga-me-ngrid .ga-me-ni{aspect-ratio:16/10}
+.ga-me-ngrid .ga-me-nb{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:9px}
+.ga-me-ngrid .ga-me-nb b{font-size:13px;max-height:34px}
+.ga-me-np{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;color:#fff}
+.ga-me-np s{font-family:'DM Sans',sans-serif;font-size:11.5px;color:#6f8f99;font-weight:400}
+.ga-me-nbtn{height:38px;margin-top:4px;border:none;border-radius:10px;background:var(--ga-cta);color:var(--ga-cta-t);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer}
+.ga-me-nbtn:hover{background:var(--ga-cta-h)}
+.ga-me-nbtn.in{background:rgba(34,197,94,.14);color:#4ade80;border:1px solid rgba(34,197,94,.55)}
+.ga-me-note{text-align:center;font-size:11.5px;color:#9FC4D0;margin-top:10px}
+/* кабинет */
+.ga-acc-top{display:flex;flex-direction:column;gap:12px;margin:10px 0 16px}
+#acc-mask #ga-loyalty{display:none !important}
+#acc-email-show{font-size:13px;color:#EAF4F7;font-weight:600;padding:10px 12px;border-radius:12px;background:#122B36;border:1px solid #1E3F4D}
+@media(max-width:860px){.ga-me-ngrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.ga-me-top{flex-direction:column}.ga-me-tools{width:100%}.ga-me-cartb{margin-left:auto}.ga-me-acc{order:-1;padding-left:0;margin-right:auto}}
 /* ══ ЭТАП 5 (20.10.2026): тексты и порядок блоков ══ */
 /* «Доставка» + «Почему мы» объединены в один блок «Рыба приедет живой»; старый блок «Почему» скрыт (остался в коде) */
 #ga-why{display:none !important}
@@ -12704,59 +12746,89 @@ function gaMeRepeat() {
     showToast(ro ? "Produsele din ultima comandă nu sunt în stoc acum" : "Товаров из прошлого заказа сейчас нет в наличии");
   }
 }
-function gaMeRender() {
-  var box = document.getElementById("ga-me");
-  var u = gaMeUser();
-  if (!box || !u || _gaMe.uid !== u.uid) return;
-  var ro = gaIsRo(), orders = _gaMe.orders;
-  // накопительная скидка — как в кабинете: по сумме выполненных заказов
-  var spent = 0, done = 0;
+function gaMeAgo(iso) {
+  var t = Date.parse(iso || ""), ro = gaIsRo();
+  if (!t) return "";
+  var d = Math.floor((Date.now() - t) / 86400000);
+  if (d <= 0) return ro ? "azi" : "сегодня";
+  if (d < 7) return d + (ro ? " zile în urmă" : " дн. назад");
+  if (d < 30) return Math.floor(d / 7) + (ro ? " săpt. în urmă" : " нед. назад");
+  return Math.max(1, Math.floor(d / 30)) + (ro ? " luni în urmă" : " мес. назад");
+}
+// данные клиента для блока и кабинета
+function gaMeStats() {
+  var orders = _gaMe.orders || [], spent = 0, done = 0;
   orders.forEach(function(o) { if (o.status === "completed") { spent += Number(o.total) || 0; done++; } });
+  var tiers = (typeof LOYALTY_TIERS !== "undefined" && Array.isArray(LOYALTY_TIERS)) ? LOYALTY_TIERS.slice().sort(function(a, b) { return a.threshold - b.threshold; }) : [];
   var tier = (typeof getLoyaltyTier === "function") ? getLoyaltyTier(spent) : null;
   var next = (typeof getNextTier === "function") ? getNextTier(spent) : null;
   var myDisc = (typeof window._gaDbDisc === "number") ? window._gaDbDisc : 0;
-  var showDisc = Math.max(myDisc, tier ? tier.discount : 0);
-  var h = '<div class="ga-me-top"><div><span class="ga-me-hi">' + (ro ? "Bună, " : "Привет, ") + gaPackEsc(String(_gaMe.name).split(" ")[0]) + '</span></div>'
-    + '<div style="display:flex;align-items:center;gap:12px">'
-    + (showDisc > 0 ? '<span class="ga-me-chip">' + (ro ? "Reducerea dvs. " : "Ваша скидка ") + showDisc + '%</span>' : '')
-    + '<button type="button" class="ga-me-acc" data-me="acc">' + (ro ? "Contul meu →" : "Мой кабинет →") + '</button></div></div>';
-  // левая колонка: прогресс и повтор заказа
-  var lc = '<div class="ga-me-card">';
-  if (next) {
-    var pct = Math.min(100, Math.round(spent / next.threshold * 100));
-    lc += '<div class="ga-me-l">' + (ro ? "Reducere cumulativă: până la " : "Накопительная скидка: до ") + '<b>' + next.label + '</b> '
-      + (ro ? "mai rămân " : "осталось ") + '<b>' + Math.max(0, next.threshold - spent) + ' MDL</b></div>'
-      + '<div class="ga-me-bar"><i style="width:' + pct + '%"></i></div>'
-      + '<div class="ga-me-l">' + (ro ? "Cumpărat pentru " : "Куплено на ") + spent + ' MDL</div>';
-  } else if (tier) {
-    lc += '<div class="ga-me-l">' + (ro ? "Aveți reducerea cumulativă maximă: " : "У вас максимальная накопительная скидка: ") + '<b>' + tier.label + '</b></div>';
+  return { orders: orders, spent: spent, done: done, tiers: tiers, tier: tier, next: next, myDisc: myDisc,
+    disc: Math.max(myDisc, tier ? tier.discount : 0) };
+}
+// карточка «Накопительная скидка»: прогресс, лестница, подарок, главная кнопка
+function gaMeStatusHtml(st) {
+  var ro = gaIsRo();
+  var h = '<div class="ga-me-card ga-me-status"><div class="ga-me-st-h"><span>' + (ro ? "Reducere cumulativă" : "Накопительная скидка") + '</span>'
+    + (st.disc > 0 ? '<em class="ga-me-badge">' + st.disc + (ro ? "% ACTIVĂ" : "% АКТИВНА") + '</em>' : '<em class="ga-me-badge off">' + (ro ? "încă 0%" : "пока 0%") + '</em>') + '</div>';
+  if (st.next) {
+    var pct = Math.min(100, Math.round(st.spent / st.next.threshold * 100));
+    h += '<div class="ga-me-bar"><i style="width:' + Math.max(pct, 3) + '%"></i></div>'
+      + '<div class="ga-me-st-row"><span>' + (ro ? "Cumpărat: " : "Куплено на ") + st.spent + ' MDL</span><b>' + (ro ? "până la " : "до ") + st.next.label + (ro ? " mai rămân " : " ещё ") + Math.max(0, st.next.threshold - st.spent) + ' MDL</b></div>';
+  } else if (st.tier) {
+    h += '<div class="ga-me-bar"><i style="width:100%"></i></div><div class="ga-me-st-row"><span>' + (ro ? "Cumpărat: " : "Куплено на ") + st.spent + ' MDL</span><b>' + (ro ? "nivel maxim" : "максимальная ступень") + '</b></div>';
   }
-  var toGift = 3 - (done % 3);
-  if (done > 0 && done % 3 === 0) lc += '<div class="ga-me-gift ok">🎁 ' + (ro ? "Cu comanda următoare — 100 g hrană cadou" : "Подарок: 100 г корма — заберите со следующим заказом") + '</div>';
-  else lc += '<div class="ga-me-gift">🎁 ' + (ro ? "Comanda " + (done % 3 + 1) + " din 3 — la a 3-a, 100 g hrană cadou" : "Заказ " + (done % 3 + 1) + " из 3 — на третьем 100 г корма в подарок") + (toGift === 1 ? (ro ? " (chiar acum!)" : " (уже этот!)") : "") + '</div>';
-  var hasLast = orders.some(function(o) { return Array.isArray(o.itemsData) && o.itemsData.length; });
-  lc += '<button type="button" class="ga-me-rep" data-me="repeat"' + (hasLast ? '' : ' disabled') + '>' + (ro ? "Repetă ultima comandă" : "Повторить последний заказ") + '</button></div>';
-  // правая колонка: вы покупали
-  var seen = {}, bought = [];
-  orders.forEach(function(o) {
+  if (st.tiers.length) {
+    h += '<div class="ga-me-ladder">';
+    st.tiers.forEach(function(t) {
+      var here = st.tier && st.tier.threshold === t.threshold;
+      h += '<span class="' + (here ? 'on' : (st.spent >= t.threshold ? 'past' : '')) + '"><b>' + t.label + '</b><i>' + (here ? (ro ? "sunteți aici" : "вы здесь") : (ro ? "de la " : "от ") + t.threshold) + '</i></span>';
+    });
+    h += '</div>';
+  }
+  var nGift = st.done % 3 + 1;
+  if (st.done > 0 && st.done % 3 === 0) h += '<div class="ga-me-gift ok"><span>🎁</span><span>' + (ro ? "Cadou: 100 g hrană — îl primiți cu comanda următoare" : "Подарок: 100 г корма — заберите со следующим заказом") + '</span></div>';
+  else h += '<div class="ga-me-gift"><span>🎁</span><span>' + (ro ? "Comanda " + nGift + " din 3 — la a 3-a <b>100 g hrană cadou</b>" : "Заказ " + nGift + " из 3 — на третьем <b>100 г корма бесплатно</b>") + '</span></div>';
+  var hasLast = st.orders.some(function(o) { return Array.isArray(o.itemsData) && o.itemsData.length; });
+  if (hasLast) h += '<button type="button" class="ga-me-rep" data-me="repeat"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>' + (ro ? "Repetă ultima comandă" : "Повторить последний заказ") + '</button>';
+  else h += '<button type="button" class="ga-me-rep" data-me="pick">' + (ro ? "Alege peștii pentru primul acvariu" : "Подобрать рыбок для первого заказа") + '</button>';
+  return h + '</div>';
+}
+// «Вы покупали» (или готовые наборы, если заказов ещё нет)
+function gaMeBoughtHtml(st, limit) {
+  var ro = gaIsRo(), seen = {}, rows = [];
+  st.orders.forEach(function(o) {
     (Array.isArray(o.itemsData) ? o.itemsData : []).forEach(function(x) {
       var id = x && parseInt(x.id, 10);
       if (isNaN(id) || seen[id] || !gaMeName(id)) return;
-      seen[id] = 1; bought.push(id);
+      seen[id] = 1; rows.push({ id: id, q: parseInt(x.qty, 10) || 1, at: o.createdAt });
     });
   });
-  var rc = '<div class="ga-me-card"><div class="ga-me-h"><span>' + (ro ? "Ați cumpărat" : "Вы покупали") + '</span></div>';
-  if (!bought.length) rc += '<div class="ga-me-l">' + (ro ? "Aici vor apărea produsele din comenzile dvs." : "Здесь появятся товары из ваших заказов") + '</div>';
-  bought.slice(0, 5).forEach(function(id) {
-    var ok = gaMeItemOk(id), img = gaMeImg(id);
-    rc += '<div class="ga-me-row"><span class="ga-me-th">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</span>'
-      + '<span class="ga-me-n"><b>' + gaPackEsc(gaMeName(id)) + '</b><span>' + (ok ? (Number(getPrice(id)) || 0) + ' MDL' : (ro ? "nu este în stoc" : "нет в наличии")) + '</span></span>'
-      + '<button type="button" class="ga-me-plus" data-me="add" data-id="' + id + '"' + (ok ? '' : ' disabled') + ' aria-label="+">' + (ok ? '+' : '—') + '</button></div>';
-  });
-  rc += '</div>';
-  // новинки недели
-  var news = [];
-  for (var i = 0; i < FISH.length && news.length < 10; i++) {
+  var h = '<div class="ga-me-card ga-me-bought"><div class="ga-me-h"><span>' + (rows.length ? (ro ? "Ați cumpărat" : "Вы покупали") : (ro ? "Începeți cu un set gata" : "Начните с готового набора")) + '</span>'
+    + (rows.length ? '<button type="button" data-me="acc">' + (ro ? "Istoric →" : "История →") + '</button>' : '') + '</div>';
+  if (rows.length) {
+    rows.slice(0, limit || 4).forEach(function(r) {
+      var ok = gaMeItemOk(r.id), img = gaMeImg(r.id);
+      h += '<div class="ga-me-row"><span class="ga-me-th">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</span>'
+        + '<span class="ga-me-n"><b>' + gaPackEsc(gaMeName(r.id)) + '</b><span>×' + r.q + ' · ' + (ok ? (Number(getPrice(r.id)) || 0) + ' MDL' : (ro ? "nu e în stoc" : "нет в наличии")) + (r.at ? ' · ' + gaMeAgo(r.at) : '') + '</span></span>'
+        + '<button type="button" class="ga-me-plus" data-me="add" data-id="' + r.id + '"' + (ok ? '' : ' disabled') + ' aria-label="+">' + (ok ? '+' : '—') + '</button></div>';
+    });
+  } else {
+    GA_PACKS.forEach(function(p) {
+      if (p.off) return;
+      var c = gaPackCalc(p); if (!c.ok) return;
+      var fish = 0; c.rows.forEach(function(r) { fish += r.q; });
+      var img = gaPackImg(c);
+      h += '<div class="ga-me-row"><span class="ga-me-th ga-pk-bg" style="background-size:cover;background-position:center"></span>'
+        + '<span class="ga-me-n"><b>' + (ro ? "Set pentru " : "Набор на ") + p.vol + ' л</b><span>' + fish + (ro ? " pești · " : " рыб · ") + c.price + ' MDL <s>' + c.full + '</s></span></span>'
+        + '<button type="button" class="ga-me-plus" data-me="pack" data-id="' + p.id + '" aria-label="+">+</button></div>';
+    });
+  }
+  return h + '</div>';
+}
+function gaMeNewHtml(st) {
+  var ro = gaIsRo(), news = [];
+  for (var i = 0; i < FISH.length && news.length < 4; i++) {
     var f = FISH[i];
     if (!f || f.id <= 0) continue;
     var cats = Array.isArray(f.cats) ? f.cats : [f.cat];
@@ -12764,35 +12836,81 @@ function gaMeRender() {
     if (!document.getElementById("card" + f.id) || !gaMeItemOk(f.id)) continue;
     news.push(f.id);
   }
-  var nc = '';
-  if (news.length) {
-    nc = '<div class="ga-me-new"><div class="ga-me-h"><span>' + (ro ? "Noutățile săptămânii" : "Новинки недели") + '</span><button type="button" data-me="allnew">' + (ro ? "Toate noutățile →" : "Все новинки →") + '</button></div><div class="ga-me-strip">';
-    news.forEach(function(id) {
-      var img = gaMeImg(id);
-      nc += '<div class="ga-me-nc"><span class="ga-me-ni">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<em>NEW</em></span>'
-        + '<span class="ga-me-nb"><span><b>' + gaPackEsc(gaMeName(id)) + '</b><span>' + (Number(getPrice(id)) || 0) + ' MDL</span></span>'
-        + '<button type="button" class="ga-me-plus" data-me="add" data-id="' + id + '" aria-label="+">+</button></span></div>';
-    });
-    nc += '</div></div>';
-  }
-  var out = h + '<div class="ga-me-grid">' + lc + rc + '</div>' + nc;
-  if (out === _gaMe.html) return;
-  _gaMe.html = out;
-  box.innerHTML = out;
-  box.style.display = "";
-  if (!box._gaBound) {
-    box._gaBound = true;
-    box.addEventListener("click", function(e) {
-      var b = e.target.closest ? e.target.closest("[data-me]") : null;
-      if (!b || b.disabled) return;
-      var a = b.getAttribute("data-me");
-      if (a === "repeat") gaMeRepeat();
-      else if (a === "add") gaMeAddOne(parseInt(b.getAttribute("data-id"), 10));
-      else if (a === "acc") { if (typeof openAccount === "function") openAccount(); }
-      else if (a === "allnew") { if (typeof gaGo === "function") gaGo("new", null); }
-    });
-  }
+  if (!news.length) return "";
+  var h = '<div class="ga-me-new"><div class="ga-me-h"><span>' + (ro ? "Noutățile săptămânii" : "Новинки недели") + '</span><button type="button" data-me="allnew">' + (ro ? "Toate noutățile →" : "Все новинки →") + '</button></div><div class="ga-me-ngrid">';
+  news.forEach(function(id) {
+    var img = gaMeImg(id), pr = Number(getPrice(id)) || 0, base = (typeof _origGetPrice === "function") ? (Number(_origGetPrice(id)) || 0) : pr;
+    var inCart = (Number(cart[id]) || 0) > 0;
+    h += '<div class="ga-me-nc"><span class="ga-me-ni">' + (img ? '<img src="' + img + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<em>NEW</em></span>'
+      + '<span class="ga-me-nb"><b>' + gaPackEsc(gaMeName(id)) + '</b><span class="ga-me-np">' + pr + ' MDL' + (base > pr ? ' <s>' + base + '</s>' : '') + '</span>'
+      + '<button type="button" class="ga-me-nbtn' + (inCart ? ' in' : '') + '" data-me="add" data-id="' + id + '">' + (inCart ? (ro ? "✓ În coș" : "✓ В корзине") : (ro ? "În coș" : "В корзину")) + '</button></span></div>';
+  });
+  h += '</div>' + (st.disc > 0 ? '<div class="ga-me-note">' + (ro ? "Prețurile sunt afișate cu reducerea dvs. de " : "Цены показаны с вашей скидкой ") + st.disc + '%</div>' : '') + '</div>';
+  return h;
 }
+function gaMeBind(el) {
+  if (!el || el._gaBound) return;
+  el._gaBound = true;
+  el.addEventListener("click", function(e) {
+    var b = e.target.closest ? e.target.closest("[data-me]") : null;
+    if (!b || b.disabled) return;
+    var a = b.getAttribute("data-me"), id = parseInt(b.getAttribute("data-id"), 10);
+    if (a === "repeat") gaMeRepeat();
+    else if (a === "add") { gaMeAddOne(id); _gaMe.html = ""; setTimeout(gaMeRender, 50); }
+    else if (a === "pack") gaPackOpen(id);
+    else if (a === "pick") { var m = document.getElementById("acc-mask"); if (m) m.classList.remove("show"); gaPickFocus(); }
+    else if (a === "acc") { if (typeof openAccount === "function") openAccount(); }
+    else if (a === "cart") openCart();
+    else if (a === "allnew") { if (typeof gaGo === "function") gaGo("new", null); }
+  });
+}
+function gaMeRender() {
+  var box = document.getElementById("ga-me");
+  var u = gaMeUser();
+  if (!box || !u || _gaMe.uid !== u.uid) return;
+  var ro = gaIsRo(), st = gaMeStats(), cs = gaCartSum();
+  var first = String(_gaMe.name || "").split(" ")[0];
+  var h = '<div class="ga-me-top"><div><div class="ga-me-hi">' + (ro ? "Bună, " : "Привет, ") + gaPackEsc(first) + '</div>'
+    + '<div class="ga-me-sub">Garage Aquarium' + (st.disc > 0 ? ' · ' + (ro ? "reducerea dvs. " : "ваша скидка ") + st.disc + '%' : '') + '</div></div>'
+    + '<div class="ga-me-tools"><a class="ga-me-ic" href="' + GA_TG_URL + '" target="_blank" rel="noopener" aria-label="Telegram"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></a>'
+    + '<button type="button" class="ga-me-cartb" data-me="cart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' + cs.sum + ' MDL</button>'
+    + '<button type="button" class="ga-me-acc" data-me="acc">' + (ro ? "Contul meu" : "Кабинет") + '</button></div></div>';
+  var out = h + '<div class="ga-me-grid">' + gaMeStatusHtml(st) + gaMeBoughtHtml(st, 4) + '</div>' + gaMeNewHtml(st);
+  if (out !== _gaMe.html) {
+    _gaMe.html = out;
+    box.innerHTML = out;
+    box.style.display = "";
+    gaMeBind(box);
+    if (typeof applyI18n === "function") applyI18n();
+  }
+  gaMeAccRender(st);
+}
+// личный кабинет: та же карточка скидки и «Вы покупали» над историей заказов
+function gaMeAccRender(st) {
+  var mask = document.getElementById("acc-mask");
+  if (!mask || !mask.classList.contains("show")) return;
+  var body = mask.querySelector(".acc-body");
+  if (!body) return;
+  var wrap = document.getElementById("ga-acc-top");
+  if (!wrap) {
+    wrap = document.createElement("div");
+    wrap.id = "ga-acc-top"; wrap.className = "ga-acc-top";
+    var em = document.getElementById("acc-email-show");
+    if (em && em.nextSibling) body.insertBefore(wrap, em.nextSibling); else body.insertBefore(wrap, body.firstChild);
+    gaMeBind(wrap);
+  }
+  var html = gaMeStatusHtml(st) + gaMeBoughtHtml(st, 6);
+  if (wrap._gaHtml !== html) { wrap._gaHtml = html; wrap.innerHTML = html; }
+}
+window.addEventListener("load", function() {
+  if (typeof openAccount !== "function") return;
+  var _prevOpen = openAccount;
+  openAccount = function() {
+    var r = _prevOpen.apply(this, arguments);
+    setTimeout(function() { try { var u = gaMeUser(); if (u && _gaMe.uid === u.uid) gaMeAccRender(gaMeStats()); } catch (e) {} }, 50);
+    return r;
+  };
+});
 // после оформления заказа — обновить данные блока (новый заказ попадёт в «Вы покупали»)
 window.addEventListener("load", function() {
   var ok = document.getElementById("okscreen");
