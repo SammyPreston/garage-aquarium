@@ -4,7 +4,7 @@
 
 const PROJECT = "garageaquarium";
 const API_KEY = process.env.FIREBASE_API_KEY || "AIzaSyA71lBgfJ-lF_Ln1NHO--dEsgB16Pshyp4";
-const TG_TOKEN = process.env.TG_TOKEN || "8516663689:AAEYNFqiN0ADvEpCMYqtIRy2J_Y80CdhO38";
+const TG_TOKEN = process.env.TG_TOKEN; // этап 2: токен только в переменных Netlify, в коде его больше нет
 const TG_CHAT = process.env.TG_CHAT || "7942111934";
 export const TZ = "Europe/Chisinau";
 

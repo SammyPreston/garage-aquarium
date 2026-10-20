@@ -8,6 +8,13 @@ exports.handler = async function(event) {
   };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: cors, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: cors, body: 'Method Not Allowed' };
+  // Этап 2 (безопасность): принимаем запросы только с сайта магазина, чтобы чужие сайты
+  // не расходовали ключ Claude. Дополнительные адреса можно указать в ALLOWED_ORIGINS (через запятую).
+  const origin = (event.headers && (event.headers.origin || event.headers.Origin)) || '';
+  const extra = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const allowed = origin === 'https://garageaquariumshop.netlify.app' || extra.includes(origin) ||
+    /^https:\/\/[a-z0-9-]+--garageaquariumshop\.netlify\.app$/.test(origin);
+  if (!allowed) return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Forbidden origin' }) };
   return new Promise((resolve) => {
     try {
       const body = event.body;
