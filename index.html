@@ -11075,7 +11075,7 @@ function gaPolicyHtml(lang) {
    + '<li>файлы cookie и локальное хранилище — до 12 месяцев либо до очистки браузера.</li></ul>'
    + '<h4>7. Ваши права</h4><p>Вы вправе: получить доступ к своим данным; исправить неточные данные; потребовать удаления; ограничить или прекратить обработку; отозвать согласие в любой момент; получить данные в переносимом формате; подать жалобу в Национальный центр по защите персональных данных Республики Молдова (datepersonale.md).</p>'
    + '<p>Отозвать согласие и удалить аккаунт можно кнопкой «Удалить аккаунт и мои данные» в личном кабинете либо письмом на <b>[EMAIL]</b>. Обращения рассматриваются в течение 30 дней. Данные заказов, необходимые для бухгалтерского учёта, сохраняются в течение установленного законом срока даже после удаления аккаунта.</p>'
-   + '<h4>8. Файлы cookie</h4><p>Обязательные файлы обеспечивают работу корзины, авторизации и выбора языка — без них сайт не работает. Иные категории cookie используются только с вашего согласия, которое можно изменить в разделе «Настройки cookie» внизу страницы.</p>'
+   + '<h4>8. Файлы cookie</h4><p>Обязательные файлы обеспечивают работу корзины, авторизации и выбора языка — без них сайт не работает. Иные категории cookie используются только с вашего согласия, которое можно изменить в разделе «Настройки cookie» внизу страницы. Аналитические cookie Google Analytics (Google Ireland Limited) включаются только после нажатия «Принять все» и помогают понять, какие разделы сайта полезны покупателям; данные обрабатываются в обобщённом виде.</p>'
    + '<h4>9. Безопасность</h4><p>Доступ к данным имеют только уполномоченные сотрудники Оператора. Передача данных защищена протоколом HTTPS. О нарушении безопасности, создающем риск для ваших прав, мы уведомим вас и Национальный центр в установленные законом сроки.</p>'
    + '<h4>10. Изменения</h4><p>Актуальная редакция Политики публикуется на этой странице с указанием версии и даты.</p>';
   var ro = ''
@@ -11102,7 +11102,7 @@ function gaPolicyHtml(lang) {
    + '<li>cookie-uri și stocarea locală — până la 12 luni sau până la ștergerea din browser.</li></ul>'
    + '<h4>7. Drepturile dumneavoastră</h4><p>Aveți dreptul: de acces la date; de rectificare; de ștergere; de restricționare sau opoziție la prelucrare; de retragere a consimțământului oricând; de portabilitate a datelor; de a depune plângere la Centrul Național pentru Protecția Datelor cu Caracter Personal (datepersonale.md).</p>'
    + '<p>Consimțământul poate fi retras, iar contul șters, prin butonul „Ștergeți contul și datele mele" din contul personal sau printr-un mesaj la <b>[EMAIL]</b>. Solicitările se examinează în 30 de zile. Datele comenzilor necesare evidenței contabile se păstrează pe durata prevăzută de lege chiar și după ștergerea contului.</p>'
-   + '<h4>8. Cookie-uri</h4><p>Cookie-urile strict necesare asigură funcționarea coșului, autentificării și alegerii limbii. Alte categorii se utilizează doar cu consimțământul dumneavoastră, care poate fi modificat din „Setări cookie" în subsolul paginii.</p>'
+   + '<h4>8. Cookie-uri</h4><p>Cookie-urile strict necesare asigură funcționarea coșului, autentificării și alegerii limbii. Alte categorii se utilizează doar cu consimțământul dumneavoastră, care poate fi modificat din „Setări cookie" în subsolul paginii. Cookie-urile analitice Google Analytics (Google Ireland Limited) se activează doar după apăsarea „Accept toate" și ne ajută să înțelegem ce secțiuni ale site-ului sunt utile; datele sunt prelucrate în formă agregată.</p>'
    + '<h4>9. Securitate</h4><p>Accesul la date îl au doar angajații autorizați ai Operatorului. Transmiterea este protejată prin HTTPS. În cazul unei încălcări de securitate care prezintă risc pentru drepturile dumneavoastră, vă vom informa, împreună cu Centrul Național, în termenele prevăzute de lege.</p>'
    + '<h4>10. Modificări</h4><p>Versiunea actuală a Politicii este publicată pe această pagină, cu indicarea versiunii și a datei.</p>';
   return (lang === 'ro') ? ro : ru;
@@ -12017,6 +12017,7 @@ function gaPackOpen(id) {
   if (!p) return;
   var c = gaPackSync(p);
   if (!c.ok) { showToast("Набор временно недоступен"); return; }
+  gaTrack("view_item", { currency: "MDL", value: c.price, items: [{ item_id: String(p.id), item_name: "Набор " + p.vol + " л", price: c.price, quantity: 1 }] });
   var fishN = 0; c.rows.forEach(function(r) { fishN += r.q; });
   var rows = c.rows.map(function(r, n) {
     return '<div class="ga-ov-row"><span class="ga-ov-n">' + (n + 1) + '</span>'
@@ -12059,6 +12060,7 @@ function gaPackAdd(id) {
   if (!c.ok) { showToast("Набор временно недоступен"); return; }
   cart[id] = (cart[id] || 0) + 1;
   updBadge();
+  gaTrack("add_to_cart", { currency: "MDL", value: c.price, items: [{ item_id: String(p.id), item_name: "Набор " + p.vol + " л", price: c.price, quantity: 1 }] });
   showToast(gaIsRo() ? ("Setul №" + p.no + " a fost adăugat în coș") : ("Набор №" + p.no + " добавлен в корзину"));
 }
 
@@ -12247,6 +12249,7 @@ function gaPickSubmit(e) {
     return false;
   }
   var p = gaPickVolPack(v);
+  gaTrack("pick_by_volume", { liters: v, pack_volume: p ? p.vol : 0 });
   if (!p) { gaScroll("sec-cards"); return false; }
   gaPackOpen(p.id);
   if (v < p.vol) showToast(gaIsRo() ? "Cel mai mic set este pentru " + p.vol + " l — scrieți-ne, ajustăm" : "Самый маленький набор — на " + p.vol + " л. Напишите нам, подберём под ваш объём");
@@ -12407,6 +12410,94 @@ function gaNavRender() {
 // большие карточки разделов могут переключаться и из других мест (меню «Новинки», «Скидки») — следим за ними
 document.addEventListener("click", function() { setTimeout(function() { try { gaNavRender(); } catch (e) {} }, 0); });
 window.addEventListener("resize", function() { try { gaHeadH(); } catch (e) {} });
+
+// ===== ЭТАП 6: Google Analytics 4 (только с согласия посетителя «Принять все») =====
+// Пока посетитель не нажал «Принять все» в окне cookie, Google Analytics не загружается вообще.
+// События: подбор по объёму, открытие набора, добавление в корзину, корзина, заказ, Telegram/WhatsApp/Viber/звонок, AI-консультант.
+var GA4_ID = "G-TXQBQW226P";
+var _ga4On = false, _gaOrderPending = null;
+function gaConsentAll() {
+  try {
+    var c = JSON.parse(localStorage.getItem("ga_privacy_consent") || "null");
+    return !!(c && c.level === "all" && (typeof GA_POLICY_VERSION === "undefined" || c.version === GA_POLICY_VERSION));
+  } catch (e) { return false; }
+}
+function gaAnalyticsStart() {
+  if (_ga4On || !GA4_ID) return;
+  _ga4On = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function() { window.dataLayer.push(arguments); };
+  window.gtag("js", new Date());
+  window.gtag("config", GA4_ID, { currency: "MDL" });
+  var sc = document.createElement("script");
+  sc.async = true;
+  sc.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(GA4_ID);
+  document.head.appendChild(sc);
+}
+function gaTrack(name, params) {
+  if (!_ga4On || typeof window.gtag !== "function") return;
+  try { window.gtag("event", name, params || {}); } catch (e) {}
+}
+function gaItem(id, qty) {
+  var f = null;
+  for (var i = 0; i < FISH.length; i++) { if (FISH[i].id == id) { f = FISH[i]; break; } }
+  return { item_id: String(id), item_name: f ? String(f.name).split(" (")[0] : String(id), price: Number(getPrice(id)) || 0, quantity: qty || 1 };
+}
+(function() {
+  if (gaConsentAll()) gaAnalyticsStart();
+  // согласие дали сейчас — включаем; выбрали «Только необходимые» — выключаем сбор до конца визита
+  if (typeof gaSaveConsent === "function") {
+    var _prevSave = gaSaveConsent;
+    gaSaveConsent = function(level) {
+      var r = _prevSave.apply(this, arguments);
+      if (level === "all") gaAnalyticsStart();
+      else if (_ga4On && typeof window.gtag === "function") { try { window.gtag("consent", "update", { analytics_storage: "denied" }); } catch (e) {} _ga4On = false; }
+      return r;
+    };
+  }
+  // звонок / мессенджеры
+  document.addEventListener("click", function(e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    var h = a.getAttribute("href") || "", m = "";
+    if (h.indexOf("t.me/") >= 0) m = "telegram";
+    else if (h.indexOf("wa.me/") >= 0) m = "whatsapp";
+    else if (h.indexOf("viber://") === 0) m = "viber";
+    else if (h.indexOf("tel:") === 0) m = "phone";
+    if (m) gaTrack("contact", { method: m });
+  }, true);
+  // функции магазина оборачиваем после загрузки всех скриптов страницы (их переопределяют патчи выше)
+  window.addEventListener("load", function() {
+    var wrap = function(name, before) {
+      var fn = window[name];
+      if (typeof fn !== "function" || fn._gaWrapped) return;
+      var w = function() { try { before.apply(this, arguments); } catch (e) {} return fn.apply(this, arguments); };
+      w._gaWrapped = true;
+      window[name] = w;
+    };
+    wrap("add", function(id) { gaTrack("add_to_cart", { currency: "MDL", value: Number(getPrice(id)) || 0, items: [gaItem(id, 1)] }); });
+    wrap("fmAdd", function() { if (typeof fmId !== "undefined" && fmId) gaTrack("add_to_cart", { currency: "MDL", value: Number(getPrice(fmId)) || 0, items: [gaItem(fmId, 1)] }); });
+    wrap("openCart", function() { var s = gaCartSum(); gaTrack("view_cart", { currency: "MDL", value: s.sum }); });
+    wrap("sendOrder", function() {
+      var items = [], s = gaCartSum();
+      for (var id in cart) { if ((Number(cart[id]) || 0) > 0) items.push(gaItem(id, Number(cart[id]))); }
+      _gaOrderPending = { currency: "MDL", value: s.sum, items: items };
+      gaTrack("begin_checkout", { currency: "MDL", value: s.sum, items: items });
+    });
+    wrap("toggleAIChat", function() { var w = document.getElementById("ai-chat-window"); if (!w || !w.classList.contains("open")) gaTrack("open_ai_chat", {}); });
+    // заказ успешно отправлен = показался экран «Спасибо»
+    var ok = document.getElementById("okscreen");
+    if (ok && window.MutationObserver) {
+      new MutationObserver(function() {
+        if (ok.classList.contains("show") && _gaOrderPending) {
+          var p = _gaOrderPending; _gaOrderPending = null;
+          p.transaction_id = "web-" + Date.now();
+          gaTrack("purchase", p);
+        }
+      }).observe(ok, { attributes: true, attributeFilter: ["class"] });
+    }
+  });
+})();
 
 // ===== запуск =====
 gaPacksSet(GA_PACKS_DEFAULT);
