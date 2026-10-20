@@ -1793,6 +1793,13 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-mbar-info b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span{font-size:11.5px;color:#FFB020;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-mbar-info span.ok{color:#4ade80}
+/* ══ ЭТАП 5 (20.10.2026): тексты и порядок блоков ══ */
+/* «Доставка» + «Почему мы» объединены в один блок «Рыба приедет живой»; старый блок «Почему» скрыт (остался в коде) */
+#ga-why{display:none !important}
+.ga-delivery.ga-live .ga-del-grid{grid-template-columns:repeat(4,1fr)}
+.ga-delivery.ga-live .ga-del-i b{font-size:13.5px}
+@media(max-width:1100px){.ga-delivery.ga-live .ga-del-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.ga-delivery.ga-live .ga-del-grid{grid-template-columns:1fr 1fr;gap:12px}.ga-delivery.ga-live .ga-del-i{flex-direction:column;gap:8px}.ga-delivery.ga-live .ga-del-i b{font-size:12px;letter-spacing:.5px}.ga-delivery.ga-live .ga-del-i p{font-size:11.5px}}
 /* ══ ЭТАП 4 (20.10.2026): навигация каталога — один слой: поиск + чипы, закреплены над списком ══ */
 /* старые слои (8 больших разделов, 14 карточек категорий, выпадающий список на телефоне) скрыты, но остаются в коде:
    чипы вызывают те же функции (switchMainTab, gaCat) */
@@ -1947,9 +1954,9 @@ function buildNewbiesSection(){}
   <div class="ga-discbar" id="ga-discbar">
     <div class="ga-disc">
       <span class="ga-disc-t">Скидки на заказ</span>
-      <span class="ga-disc-r"><b>до 1000 лей</b><i>5%</i></span>
-      <span class="ga-disc-r"><b>до 2000 лей</b><i>10%</i></span>
-      <span class="ga-disc-r"><b>до 3000 лей</b><i>15%</i></span>
+      <span class="ga-disc-r"><b>от 1000 лей</b><i>5%</i></span>
+      <span class="ga-disc-r"><b>от 2000 лей</b><i>10%</i></span>
+      <span class="ga-disc-r"><b>от 3000 лей</b><i>15%</i></span>
       <span class="ga-disc-r"><b>от 5000 лей</b><i>20%</i></span>
     </div>
     <div class="ga-bonus">
@@ -3066,12 +3073,13 @@ function buildNewbiesSection(){}
 </div>
 </main>
 
-<div class="ga-delivery" id="ga-delivery">
-  <h2>Доставка <span>по Молдове</span></h2>
+<div class="ga-delivery ga-live" id="ga-delivery">
+  <h2>Рыба приедет <span>живой</span></h2>
   <div class="ga-del-grid">
-    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span><b>Кишинёв</b><p>Бесплатно от суммы заказа <em>350 лей</em></p></span></div>
-    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9S14.5 18.2 12 21c-2.5-2.8-3.8-5.8-3.8-9S9.5 5.8 12 3z"/></svg></span><span><b>По Молдове</b><p>Бесплатно от суммы заказа <em>550 лей</em></p></span></div>
-    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11" rx="1"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg></span><span><b>Сроки</b><p>1&ndash;2 дня, кислородная упаковка</p></span></div>
+    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7c3 3.6 6 7 6 10.3a6 6 0 0 1-12 0c0-3.3 3-6.7 6-10.3z"/><path d="M9.5 14a2.5 2.5 0 0 0 2.5 2.5"/></svg></span><span><b>Кислород в пакете</b><p>Термопакет держит температуру до 24 часов</p></span></div>
+    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><span><b>Карантин 14 дней</b><p>Продаём только здоровую, подрощенную рыбу</p></span></div>
+    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11" rx="1"/><path d="M15 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span><b>1–2 дня по Молдове</b><p>Срочно — в день заказа при оформлении до 17:00</p></span></div>
+    <div class="ga-del-i"><span class="ga-del-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><span><b>Бесплатная доставка</b><p>Кишинёв — от <em>350 лей</em>, Молдова — от <em>550 лей</em></p></span></div>
   </div>
 </div>
 <div class="ga-why" id="ga-why">
@@ -10488,6 +10496,9 @@ function loadCardEdits() {
     "до 1000 лей": "până la 1000 lei",
     "до 2000 лей": "până la 2000 lei",
     "до 3000 лей": "până la 3000 lei",
+    "от 1000 лей": "de la 1000 lei",
+    "от 2000 лей": "de la 2000 lei",
+    "от 3000 лей": "de la 3000 lei",
     "от 5000 лей": "de la 5000 lei",
     "Каждый 3-й заказ —": "A 3-a comandă —",
     "100 г корма в подарок": "100 g de hrană cadou",
@@ -12407,6 +12418,19 @@ gaPacksSet(GA_PACKS_DEFAULT);
     window.i18nSet("для аквариума", "pentru acvariu de");
     window.i18nSet("Набор для аквариума", "Set pentru acvariu de");
     window.i18nSet("Все рыбки", "Toți peștii");
+    window.i18nSet("Рыба приедет", "Peștii ajung");
+    window.i18nSet("живой", "vii");
+    window.i18nSet("Кислород в пакете", "Oxigen în pungă");
+    window.i18nSet("Термопакет держит температуру до 24 часов", "Termopachetul menține temperatura până la 24 de ore");
+    window.i18nSet("Карантин 14 дней", "Carantină 14 zile");
+    window.i18nSet("Продаём только здоровую, подрощенную рыбу", "Vindem doar pești sănătoși și crescuți");
+    window.i18nSet("1–2 дня по Молдове", "1–2 zile în Moldova");
+    window.i18nSet("Срочно — в день заказа при оформлении до 17:00", "Urgent — în ziua comenzii, dacă e plasată până la 17:00");
+    window.i18nSet("Бесплатная доставка", "Livrare gratuită");
+    window.i18nSet("Кишинёв — от", "Chișinău — de la");
+    window.i18nSet(", Молдова — от", ", Moldova — de la");
+    window.i18nSet("350 лей", "350 lei");
+    window.i18nSet("550 лей", "550 lei");
     window.i18nSet("Первый аквариум?", "Primul acvariu?");
     window.i18nSet("Подберём рыбок, которые уживутся", "Alegem peștii care se înțeleg între ei");
     window.i18nSet("Объём вашего аквариума", "Volumul acvariului dvs.");
