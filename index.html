@@ -1802,6 +1802,17 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 @media(max-width:760px){.ga-rib-ph{display:none}}
 /* бейдж скидки на фото карточки (-20%) — оранжевый, как бейджи скидок на наборах (раньше личная скидка была голубой) */
 .ga-disc-corner{background:linear-gradient(135deg,#ff9a6b,#ff5f6d) !important;color:#fff !important;box-shadow:0 3px 10px rgba(255,95,109,.35) !important}
+/* «Новинки недели» — лента, листается свайпом / стрелками / мышью */
+.ga-me-ngrid{display:flex !important;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;overscroll-behavior-x:contain}
+.ga-me-ngrid::-webkit-scrollbar{display:none}
+.ga-me-ngrid .ga-me-nc{flex:0 0 calc((100% - 30px) / 4) !important;scroll-snap-align:start}
+.ga-me-ngrid.dragging{scroll-snap-type:none;scroll-behavior:auto;cursor:grabbing;user-select:none}
+.ga-me-ngrid.dragging img{pointer-events:none}
+.ga-me-nav{display:inline-flex;align-items:center;gap:8px}
+.ga-me-arr{width:32px;height:32px;border-radius:50%;border:1px solid #1E3F4D !important;background:#122B36 !important;color:#EAF4F7 !important;font-size:20px !important;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0 0 2px}
+.ga-me-arr:hover{border-color:#2EE6C5 !important;color:#2EE6C5 !important}
+@media(max-width:860px){.ga-me-ngrid .ga-me-nc{flex-basis:calc((100% - 10px) / 2.3) !important}}
+@media(max-width:640px){.ga-me-arr{display:none}}
 /* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
 .ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
 .ga-gbtn:hover{background:#f2f5f7}
@@ -12856,7 +12867,7 @@ function gaMeBoughtHtml(st, limit) {
 }
 function gaMeNewHtml(st) {
   var ro = gaIsRo(), news = [];
-  for (var i = 0; i < FISH.length && news.length < 4; i++) {
+  for (var i = 0; i < FISH.length && news.length < 16; i++) {
     var f = FISH[i];
     if (!f || f.id <= 0) continue;
     var cats = Array.isArray(f.cats) ? f.cats : [f.cat];
@@ -12865,7 +12876,9 @@ function gaMeNewHtml(st) {
     news.push(f.id);
   }
   if (!news.length) return "";
-  var h = '<div class="ga-me-new"><div class="ga-me-h"><span>' + (ro ? "Noutățile săptămânii" : "Новинки недели") + '</span><button type="button" data-me="allnew">' + (ro ? "Toate noutățile →" : "Все новинки →") + '</button></div><div class="ga-me-ngrid">';
+  var h = '<div class="ga-me-new"><div class="ga-me-h"><span>' + (ro ? "Noutățile săptămânii" : "Новинки недели") + '</span><span class="ga-me-nav">'
+    + '<button type="button" class="ga-me-arr" data-me="nprev" aria-label="←">&#8249;</button><button type="button" class="ga-me-arr" data-me="nnext" aria-label="→">&#8250;</button>'
+    + '<button type="button" data-me="allnew">' + (ro ? "Toate noutățile →" : "Все новинки →") + '</button></span></div><div class="ga-me-ngrid">';
   news.forEach(function(id) {
     var img = gaMeImg(id), pr = Number(getPrice(id)) || 0, base = (typeof _origGetPrice === "function") ? (Number(_origGetPrice(id)) || 0) : pr;
     var inCart = (Number(cart[id]) || 0) > 0;
@@ -12879,7 +12892,27 @@ function gaMeNewHtml(st) {
 function gaMeBind(el) {
   if (!el || el._gaBound) return;
   el._gaBound = true;
+  var drag = null;
+  el.addEventListener("pointerdown", function(e) {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    var g = e.target.closest ? e.target.closest(".ga-me-ngrid") : null;
+    if (!g) return;
+    drag = { g: g, x: e.clientX, sl: g.scrollLeft, moved: false };
+  });
+  window.addEventListener("pointermove", function(e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 6) { drag.moved = true; drag.g.classList.add("dragging"); }
+    if (drag.moved) { drag.g.scrollLeft = drag.sl - dx; e.preventDefault(); }
+  });
+  window.addEventListener("pointerup", function() {
+    if (!drag) return;
+    var d = drag; drag = null;
+    d.g.classList.remove("dragging");
+    if (d.moved) { el._gaNoClick = true; setTimeout(function() { el._gaNoClick = false; }, 60); }
+  });
   el.addEventListener("click", function(e) {
+    if (el._gaNoClick) { e.preventDefault(); return; }
     var b = e.target.closest ? e.target.closest("[data-me]") : null;
     if (!b || b.disabled) return;
     var a = b.getAttribute("data-me"), id = parseInt(b.getAttribute("data-id"), 10);
@@ -12891,6 +12924,10 @@ function gaMeBind(el) {
     else if (a === "cart") openCart();
     else if (a === "allnew") { if (typeof gaGo === "function") gaGo("new", null); }
     else if (a === "notify") { if (typeof sendPreorder === "function") sendPreorder(id); }
+    else if (a === "nprev" || a === "nnext") {
+      var g = el.querySelector(".ga-me-ngrid");
+      if (g) g.scrollBy({ left: (a === "nnext" ? 1 : -1) * Math.max(200, g.clientWidth * 0.9), behavior: "smooth" });
+    }
     else if (a === "share") gaMeShare();
   });
 }
@@ -12909,8 +12946,10 @@ function gaMeRender() {
   var out = h + '<div class="ga-me-grid">' + gaMeStatusHtml(st) + gaMeBoughtHtml(st, 4) + '</div>' + gaMeNewHtml(st)
     + (extra ? '<div class="ga-me-grid ga-me-extra">' + extra + '</div>' : '');
   if (out !== _gaMe.html) {
+    var _ng = box.querySelector(".ga-me-ngrid"), _sl = _ng ? _ng.scrollLeft : 0;
     _gaMe.html = out;
     box.innerHTML = out;
+    _ng = box.querySelector(".ga-me-ngrid"); if (_ng && _sl) _ng.scrollLeft = _sl;
     box.style.display = "";
     gaMeBind(box);
     if (typeof applyI18n === "function") applyI18n();
