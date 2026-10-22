@@ -1834,6 +1834,15 @@ footer{padding:0;border-top:1px solid var(--ga-line);margin-top:26px}
 .ga-me-ord .ga-me-ghost{margin:0 0 10px}
 .ga-me-cartb,.ga-me-histb{white-space:nowrap}
 @media(max-width:640px){.ga-me-histb{padding:0 10px;font-size:13px}.ga-me-od{min-width:76px;font-size:12px}.ga-me-tools{gap:6px}.ga-me-cartb{padding:0 10px;font-size:13px;margin-left:0}.ga-me-ic{width:40px;height:40px}.ga-me-acc{font-size:12.5px}}
+/* 22.10.2026: нижняя панель — главная кнопка «Оформить заказ» (пустая корзина → общий список рыбок); есть и на компьютере */
+@media(min-width:761px){
+  .ga-mbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:95;display:flex;align-items:center;gap:10px;width:min(560px,calc(100% - 190px));padding:10px 12px;border-radius:16px;background:rgba(11,26,34,.94);border:1px solid #1E3F4D;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 14px 32px rgba(0,0,0,.45)}
+  body.ga-has-mbar{padding-bottom:90px}
+}
+body:has(#overlay.open) .ga-mbar,body:has(.ga-ov-mask) .ga-mbar,body:has(#fish-modal-mask.show) .ga-mbar,body:has(#acc-mask.show) .ga-mbar,body:has(#auth-mask.show) .ga-mbar{display:none !important}
+.ga-mbar.has-cart .ga-mbar-main{padding:0 16px}
+body.ga-has-mbar .toast{bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(170px)}
+body.ga-has-mbar .toast.show{transform:translateX(-50%) translateY(0)}
 /* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
 .ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
 .ga-gbtn:hover{background:#f2f5f7}
@@ -12506,6 +12515,19 @@ function gaBarUpdate() {
       var a = b.getAttribute("data-mb");
       if (a === "pick") gaPickFocus();
       else if (a === "cart") openCart();
+      else if (a === "catalog") {
+        // корзина пуста — ведём в общий список рыбок
+        var fb = document.getElementById("sec-btn-fish");
+        if (fb && typeof switchMainTab === "function") switchMainTab(fb, "fish");
+        try { _gaNavCat = -1; _gaNavHtml = ""; gaNavRender(); } catch (e2) {}
+        setTimeout(function() {
+          var g = document.getElementById("grid"), cb = document.getElementById("ga-catalog");
+          if (!g || !cb) { gaScroll("ga-catalog"); return; }
+          var hh = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--ga-head-h"), 10) || 0;
+          window.scrollTo({ top: Math.max(0, g.getBoundingClientRect().top + window.pageYOffset - hh - cb.offsetHeight - 6), behavior: "smooth" });
+        }, 30);
+        showToast(gaIsRo() ? "Alegeți peștii și apăsați „În coș”" : "Выберите рыбок и нажмите «В корзину»");
+      }
     });
     document.body.appendChild(bar);
     document.body.classList.add("ga-has-mbar");
@@ -12520,9 +12542,9 @@ function gaBarUpdate() {
       ? '<span>' + (ro ? "până la livrare gratuită " + left + " MDL" : "до бесплатной доставки " + left + " MDL") + '</span>'
       : '<span class="ok">' + (ro ? "livrare gratuită în Chișinău" : "доставка по Кишинёву бесплатно") + '</span>';
     h = '<div class="ga-mbar-info"><b>' + cnt + ' &middot; ' + s.sum + ' MDL</b>' + ship + '</div>'
-      + '<button type="button" class="ga-mbar-main" data-mb="cart">' + (ro ? "Comandă" : "Оформить") + '</button>';
+      + '<button type="button" class="ga-mbar-main" data-mb="cart">' + (ro ? "Plasează comanda" : "Оформить заказ") + '</button>';
   } else {
-    h = '<button type="button" class="ga-mbar-main" data-mb="pick">' + (ro ? "Alege peștii" : "Подобрать рыбок") + '</button>' + tg;
+    h = '<button type="button" class="ga-mbar-main" data-mb="catalog">' + (ro ? "Plasează comanda" : "Оформить заказ") + '</button>' + tg;
   }
   if (h === _gaBarHtml) return;
   _gaBarHtml = h;
