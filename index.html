@@ -1843,6 +1843,35 @@ body:has(#overlay.open) .ga-mbar,body:has(.ga-ov-mask) .ga-mbar,body:has(#fish-m
 .ga-mbar.has-cart .ga-mbar-main{padding:0 16px}
 body.ga-has-mbar .toast{bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(170px)}
 body.ga-has-mbar .toast.show{transform:translateX(-50%) translateY(0)}
+/* 23.10.2026: на ПК (где видно верхнее меню) нижней панели нет — вместо неё мигающая кнопка «Оформить заказ» в меню после «Скидки» */
+.ga-nav .ga-nav-order{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 16px;border-radius:100px;background:var(--ga-cta,#FF7A3D);color:var(--ga-cta-t,#0B1A22);font-weight:600;letter-spacing:1px;white-space:nowrap;animation:gaNavOrdBlink 1.6s ease-in-out infinite}
+.ga-nav .ga-nav-order:hover{color:var(--ga-cta-t,#0B1A22);background:var(--ga-cta-h,#FF9460);animation-play-state:paused}
+.ga-nav .ga-nav-order::after{display:none}
+.ga-nav .ga-nav-order i{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:100px;background:#0B1A22;color:#FF9460;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0;display:inline-flex;align-items:center;justify-content:center}
+@keyframes gaNavOrdBlink{0%,100%{box-shadow:0 0 0 0 rgba(255,122,61,.65);filter:brightness(1)}50%{box-shadow:0 0 0 7px rgba(255,122,61,0);filter:brightness(1.18)}}
+@media(prefers-reduced-motion:reduce){.ga-nav .ga-nav-order{animation:none}}
+@media(min-width:861px){
+  .ga-mbar{display:none !important}
+  body.ga-has-mbar{padding-bottom:0 !important}
+  body.ga-has-mbar .toast{bottom:1.5rem;transform:translateX(-50%) translateY(80px)}
+  body.ga-has-mbar .toast.show{transform:translateX(-50%) translateY(0)}
+}
+/* на ПК Telegram из шапки переехал в верхнюю ленту (рядом с телефоном), чтобы кнопка заказа влезла в одну строку */
+.ga-rib-tg{display:none;align-items:center;gap:4px;color:#a0bcd4;text-decoration:none;white-space:nowrap}
+.ga-rib-tg b{color:#2EE6C5;font-weight:700}
+.ga-rib-tg svg{color:#2EE6C5}
+.ga-rib-tg:hover b{text-decoration:underline}
+@media(min-width:861px){
+  .ga-rib-tg{display:inline-flex}
+  header .ga-tg{display:none !important}
+  .ga-nav{column-gap:14px !important}
+  .ga-nav .ga-nav-order{padding:0 13px;font-size:12px;letter-spacing:.6px;height:32px}
+}
+@media(min-width:861px) and (max-width:1599px){header{column-gap:14px !important}.ga-nav{margin-left:6px}}
+.ga-nav .ga-nav-order .s{display:none}
+@media(min-width:1101px) and (max-width:1359px){html:not([lang="ro"]) .ga-nav .ga-nav-order .l{display:none}html:not([lang="ro"]) .ga-nav .ga-nav-order .s{display:inline}}
+@media(min-width:861px) and (max-width:999px){.ga-nav .ga-nav-order .l{display:none}.ga-nav .ga-nav-order .s{display:inline}}
+@media(min-width:1101px) and (max-width:1309px){html[lang="ro"] .ga-nav .ga-nav-order .l{display:none}html[lang="ro"] .ga-nav .ga-nav-order .s{display:inline}}
 /* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
 .ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
 .ga-gbtn:hover{background:#f2f5f7}
@@ -2043,6 +2072,7 @@ function buildNewbiesSection(){}
     <span>&#128666; <b style="color:#4fc3f7">Кишинёв</b> от <b style="color:#ffd54f">350 MDL</b> — бесплатно</span>
     <span>&#127474;&#127465; <b style="color:#4fc3f7">По Молдове</b> от <b style="color:#ffd54f">550 MDL</b> — бесплатно</span>
     <a class="ga-rib-ph" href="tel:+37378707118">&#128222; <b>+373 78 707 118</b> <i>· Пн–Вс 10:00–20:00</i></a>
+    <a class="ga-rib-tg" href="https://t.me/+37378707118" target="_blank" rel="noopener" title="Написать в Telegram"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg> <b>Telegram</b></a>
   </span>
   <span class="run-car" aria-hidden="true">&#128666;</span>
 </div>
@@ -12512,7 +12542,16 @@ function gaBarUpdate() {
     bar.addEventListener("click", function(e) {
       var b = e.target.closest ? e.target.closest("[data-mb]") : null;
       if (!b) return;
-      var a = b.getAttribute("data-mb");
+      gaBarAct(b.getAttribute("data-mb"));
+    });
+    document.body.appendChild(bar);
+    document.body.classList.add("ga-has-mbar");
+  }
+  gaNavOrderUpdate();
+  gaBarRender(bar);
+}
+// действие кнопки «Оформить заказ» (нижняя панель на телефоне и кнопка в верхнем меню на ПК)
+function gaBarAct(a) {
       if (a === "pick") gaPickFocus();
       else if (a === "cart") openCart();
       else if (a === "catalog") {
@@ -12528,10 +12567,28 @@ function gaBarUpdate() {
         }, 30);
         showToast(gaIsRo() ? "Alegeți peștii și apăsați „În coș”" : "Выберите рыбок и нажмите «В корзину»");
       }
+}
+// 23.10.2026: на ПК «Оформить заказ» — мигающая кнопка в верхнем меню после «Скидки» (нижней панели на ПК нет)
+function gaNavOrderUpdate() {
+  var nav = document.querySelector("header .ga-nav") || document.querySelector(".ga-nav");
+  if (!nav) return;
+  var btn = document.getElementById("ga-nav-order");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.type = "button"; btn.id = "ga-nav-order"; btn.className = "ga-nav-order";
+    btn.setAttribute("data-noi18n", "1");
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      gaBarAct(gaCartSum().n > 0 ? "cart" : "catalog");
     });
-    document.body.appendChild(bar);
-    document.body.classList.add("ga-has-mbar");
+    nav.appendChild(btn);
   }
+  var n = gaCartSum().n;
+  var h = '<span class="l">' + (gaIsRo() ? "Plasează comanda" : "Оформить заказ") + '</span><span class="s">' + (gaIsRo() ? "Comandă" : "Заказать") + '</span>' + (n > 0 ? '<i>' + n + '</i>' : '');
+  if (btn.innerHTML !== h) btn.innerHTML = h;
+  btn.classList.toggle("has-cart", n > 0);
+}
+function gaBarRender(bar) {
   var ro = gaIsRo(), s = gaCartSum(), h;
   var tg = '<a class="ga-mbar-tg" href="' + GA_TG_URL + '" target="_blank" rel="noopener" aria-label="Telegram">'
     + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></a>';
