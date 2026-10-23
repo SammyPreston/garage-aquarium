@@ -3676,9 +3676,9 @@ function calcStockSummary(invoices, orders) {
   // Subtract sold from completed orders — only orders AFTER invoiceDate
   orders.forEach(function(order) {
     if (order.status !== 'completed') return;
-    // Get order date
-    var orderDate = null;
-    if (order.createdAt) {
+    // Get order date (23.10.2026: дата продажи — когда нажали «Завершить», для старых заказов — дата оформления)
+    var orderDate = (typeof order.completedAt === 'string' && order.completedAt) ? order.completedAt : null;
+    if (!orderDate && order.createdAt) {
       if (typeof order.createdAt === 'string') orderDate = order.createdAt;
       else if (order.createdAt.toDate) orderDate = order.createdAt.toDate().toISOString();
       else if (order.createdAt.seconds) orderDate = new Date(order.createdAt.seconds * 1000).toISOString();
@@ -6264,6 +6264,14 @@ function admTab(tab) {
 
 // ============================================================
 // ADMIN STATISTICS — daily breakdown + proper top items
+// дата продажи: когда заказ завершили (completedAt), у старых заказов — дата оформления
+function gaSaleDate(o) {
+  if (o && typeof o.completedAt === "string" && o.completedAt) {
+    var d = new Date(o.completedAt);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return parseOrderDate(o);
+}
 function parseOrderDate(o) {
   var raw = o.createdAt || o.date || "";
   var dt = null;
@@ -6323,7 +6331,7 @@ function renderAdminStats() {
     // По дням
     var byDay = {};
     completed.forEach(function(o) {
-      var dt = parseOrderDate(o);
+      var dt = gaSaleDate(o);
       if (!dt) return;
       var key = ('0'+dt.getDate()).slice(-2)+'.'+('0'+(dt.getMonth()+1)).slice(-2)+'.'+dt.getFullYear();
       if (!byDay[key]) byDay[key] = { total:0, count:0, revKnown:0, cost:0 };
@@ -6342,7 +6350,7 @@ function renderAdminStats() {
     var revParsed = 0;      // вся выручка, разобранная из строк заказов
     completed.forEach(function(o) {
       // день этого заказа — чтобы разложить прибыль по датам
-      var _dk = null, _dto = parseOrderDate(o);
+      var _dk = null, _dto = gaSaleDate(o);
       if (_dto) _dk = ('0'+_dto.getDate()).slice(-2)+'.'+('0'+(_dto.getMonth()+1)).slice(-2)+'.'+_dto.getFullYear();
       var itemsArr = Array.isArray(o.items) ? o.items : (typeof o.items === 'string' ? o.items.split(',') : []);
       itemsArr.forEach(function(raw) {
@@ -8662,7 +8670,11 @@ function btnStyle(color) {
 
 function updateOrderStatus(docId, status) {
   if (!fbDb) return;
-  fbDb.collection("orders").doc(docId).update({ status: status })
+  // 23.10.2026: дата продажи = момент нажатия «Завершить» (completedAt); при возврате статуса — убираем
+  var _upd = { status: status };
+  if (status === "completed") _upd.completedAt = new Date().toISOString();
+  else { try { _upd.completedAt = firebase.firestore.FieldValue.delete(); } catch (e) {} }
+  fbDb.collection("orders").doc(docId).update(_upd)
     .then(function() {
       showToast("Status updated!");
       renderAdminOrders();
@@ -9882,7 +9894,7 @@ function qsSave() {
     discountPct: _qsSel.disc || 0,
     lang: 'ru', bonusApplied: false, status: 'completed',
     source: isGarage ? 'garage_quick' : 'admin_manual',
-    createdAt: now.toISOString(), date: now.toLocaleString('ru-RU'),
+    createdAt: now.toISOString(), completedAt: now.toISOString(), date: now.toLocaleString('ru-RU'),
     uid: (_qsSel.id && !isGarage) ? _qsSel.id : 'admin', email: ''
   }).then(function() {
     showToast('✅ Продано на ' + total + ' MDL, склад обновлён');
@@ -10155,8 +10167,8 @@ openAccount = function() {
         var loyaltyHtml = renderLoyaltyBlock(email, totalSpent, completed);
         list.insertAdjacentHTML("beforebegin", loyaltyHtml);
 
-        // Gift check
-        if (completed > 0 && completed % 3 === 0) {
+        // Gift check — 23.10.2026: отключено, подарок добавляется строкой «🎁 Бонус» в 3-й, 6-й… заказ при оформлении
+        if (false && completed > 0 && completed % 3 === 0) {
           // Already shown in loyalty block
           // Check if we already sent this notification
           var giftKey = "gift_notified_" + email + "_" + completed;
@@ -10188,7 +10200,7 @@ sendOrder = async function() {
   fbDb.collection("orders").where("email", "==", email).where("status", "==", "completed").get()
     .then(function(snap) {
       var count = snap.size;
-      if (count > 0 && count % 3 === 0) {
+      if (false && count > 0 && count % 3 === 0) { // 23.10.2026: отключено — подарок уже в самом заказе
         var giftKey = "gift_notified_" + email + "_" + count;
         if (!localStorage.getItem(giftKey)) {
           localStorage.setItem(giftKey, "1");
@@ -10207,68 +10219,146 @@ sendOrder = async function() {
 // ============================================================
 // GIFTS PANEL - Admin gives 100g food to clients
 // ============================================================
+// 23.10.2026: подарки — каждый 3-й, 6-й, 9-й… оформленный заказ клиента = 100 г корма.
+// Клиент узнаётся по email и телефону (заказы гостя с тем же телефоном — тот же клиент).
+// «Дали» = заказы со строкой «🎁 Бонус» (добавляется при оформлении) + ручные выдачи (коллекция gifts).
+var _gfFilter = "owed";
+function gaGiftPhoneKey(p) {
+  var d = String(p || "").replace(/\D/g, "");
+  return d.length >= 8 ? d.slice(-8) : "";
+}
+function gaGiftHasBonus(o) {
+  if (o && o.bonusApplied === true) return true;
+  var it = Array.isArray(o && o.items) ? o.items : String((o && o.items) || "").split("\n");
+  for (var i = 0; i < it.length; i++) if (/(Бонус|Bonus)\s*:/i.test(String(it[i] || ""))) return true;
+  return false;
+}
+function gaGiftEsc(t) { return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function gaGiftSetFilter(f) { _gfFilter = f; renderGiftsPanel(); }
 function renderGiftsPanel() {
   var wrap = document.getElementById("gifts-list");
   if (!wrap) return;
   if (!fbDb) { wrap.innerHTML='<p style="color:#ff8888;padding:1rem">Firebase not connected</p>'; return; }
-  wrap.innerHTML='<p style="color:#7a9bbf;font-size:12px;text-align:center;padding:1.5rem">\u23F3...</p>';
+  wrap.innerHTML='<p style="color:#7a9bbf;font-size:12px;text-align:center;padding:1.5rem">⏳...</p>';
 
-  // Load users + gifts + orders in parallel, handle missing collections
   var p1 = fbDb.collection("users").get().catch(function(){ return {docs:[]}; });
   var p2 = fbDb.collection("gifts").get().catch(function(){ return {docs:[]}; });
   var p3 = gaOrdersAll().catch(function(){ return {docs:[]}; });
 
   Promise.all([p1,p2,p3]).then(function(r) {
-    var clients = {};
-
-    // Build from users collection
-    r[0].docs.forEach(function(doc) {
-      var d = doc.data();
-      if (!d.email) return;
-      clients[d.email] = { email:d.email, name:d.name||d.email.split("@")[0], phone:d.phone||"", orders:0, total:0, given:0 };
+    // --- объединение email и телефонов в одного клиента ---
+    var par = {};
+    var find = function(x) { if (par[x] === undefined) par[x] = x; while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
+    var join = function(a, b) { if (!a || !b) return; var ra = find(a), rb = find(b); if (ra !== rb) par[rb] = ra; };
+    var users = {};
+    (Array.isArray(r[0].docs) ? r[0].docs : []).forEach(function(doc) {
+      var d = doc.data() || {};
+      var em = String(d.email || "").trim().toLowerCase(), tk = gaGiftPhoneKey(d.phone);
+      users[doc.id] = { email: em, phone: d.phone || "", name: d.name || "" };
+      if (em) find("e:" + em);
+      if (em && tk) join("e:" + em, "t:" + tk);
     });
-
-    // Count orders
-    r[2].docs.forEach(function(doc) {
-      var d = doc.data();
-      if (!d.email) return;
-      if (!clients[d.email]) clients[d.email] = { email:d.email, name:d.name||d.email.split("@")[0], phone:d.phone||"", orders:0, total:0, given:0 };
-      clients[d.email].orders++;
-      if (d.status==="completed") clients[d.email].total += (d.total||0);
+    var orders = [];
+    (Array.isArray(r[2].docs) ? r[2].docs : []).forEach(function(doc) {
+      var o = doc.data() || {};
+      if (o.source === "garage_quick") return;                       // продажа в гараже — не клиент
+      var em = String(o.email || "").trim().toLowerCase();
+      if (!em && o.uid && users[o.uid] && users[o.uid].email) em = users[o.uid].email; // ручная продажа клиенту
+      var tk = gaGiftPhoneKey(o.phone);
+      if (!em && !tk) return;                                        // не к кому привязать
+      var node = em ? "e:" + em : "t:" + tk;
+      find(node);
+      if (em && tk) join("e:" + em, "t:" + tk);
+      var dt = (typeof parseOrderDate === "function") ? parseOrderDate(o) : null;
+      orders.push({ node: node, o: o, ts: dt ? dt.getTime() : 0, dt: dt, em: em });
     });
-
-    // Apply gifts given
-    r[1].docs.forEach(function(doc) {
-      var d = doc.data();
-      if (clients[d.email]) clients[d.email].given = d.giftsGiven||0;
+    // ручные выдачи: документ gifts/<email> или gifts/tel_<8 цифр>
+    var manual = {};
+    (Array.isArray(r[1].docs) ? r[1].docs : []).forEach(function(doc) {
+      var d = doc.data() || {}, id = String(doc.id || "");
+      var node = /^tel_\d{8}$/.test(id) ? "t:" + id.slice(4) : (d.email ? "e:" + String(d.email).trim().toLowerCase() : "");
+      if (!node) return;
+      find(node);
+      manual[node] = (manual[node] || 0) + (parseInt(d.giftsGiven, 10) || 0);
     });
-
-    var rows = Object.values(clients).sort(function(a,b){ return b.orders-a.orders; });
-    if (!rows.length) { wrap.innerHTML='<div style="text-align:center;padding:2rem;color:#7a9bbf">\uD83D\uDC64 No clients</div>'; return; }
-
-    var out = '<p style="font-size:11px;color:#ffd54f;margin-bottom:10px">\uD83C\uDF81 Give 100g food gift to any client</p>';
-    rows.forEach(function(c) {
-      var earned = Math.floor(c.orders/3);
-      var pending = Math.max(0, earned-(c.given||0));
-      var tier = typeof getLoyaltyTier==="function"?getLoyaltyTier(c.total):null;
-      out += '<div style="background:#111e33;border:1px solid '+(pending>0?"rgba(129,199,132,.3)":"rgba(79,195,247,.1)")+';border-radius:10px;padding:12px;margin-bottom:8px">'
-        +'<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:8px">'
-        +'<div><b style="color:#e8f4fd;font-size:13px">'+c.name+'</b>'
-        +'<div style="font-size:11px;color:#7a9bbf">'+c.email+'</div>'
-        +(c.phone?'<div style="font-size:11px;color:#7a9bbf">'+c.phone+'</div>':'')+'</div>'
-        +'<div style="text-align:right"><div style="font-size:11px;color:#4fc3f7">\u0417\u0430\u043a.: <b>'+c.orders+'</b></div>'
-        +'<div style="font-size:11px;color:#ffd54f">'+c.total+' MDL</div>'
-        +(tier?'<div style="font-size:10px;color:'+tier.color+'">\uD83C\uDF1F '+tier.label+'</div>':'')+'</div></div>'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'
-        +'<span style="font-size:11px;color:#7a9bbf">\uD83C\uDF81 Earned:<b>'+(pending>0?'<b style="color:#81c784"> '+pending+'</b>':' 0')+'</b> Given:<b>'+(c.given||0)+'</b></span>'
-        +'<button data-e="'+encodeURIComponent(c.email)+'" data-n="'+encodeURIComponent(c.name)+'" data-p="'+encodeURIComponent(c.phone||'')+'" data-g="'+(c.given||0)+'" '
-        +'onclick="giveGift(decodeURIComponent(this.dataset.e),decodeURIComponent(this.dataset.n),decodeURIComponent(this.dataset.p),+this.dataset.g,true)" '
-        +'style="padding:5px 14px;border-radius:8px;border:none;background:linear-gradient(90deg,#81c784,#4caf50);color:#fff;font-weight:700;font-size:12px;cursor:pointer">'
-        +'\uD83C\uDF81 Give 100g food</button>'
-        +'</div></div>';
+    // --- клиенты ---
+    var cl = {};
+    orders.sort(function(a, b) { return a.ts - b.ts; });
+    orders.forEach(function(x) {
+      var root = find(x.node);
+      var c = cl[root] || (cl[root] = { orders: [], email: "", phone: "", name: "", manual: 0, docKey: "" });
+      c.orders.push(x);
+      if (x.em) c.email = x.em;
+      if (x.o.phone) c.phone = x.o.phone;
+      if (x.o.name) c.name = x.o.name;
     });
+    Object.keys(manual).forEach(function(node) {
+      var root = find(node);
+      if (cl[root]) cl[root].manual += manual[node];
+    });
+    var rows = Object.keys(cl).map(function(k) {
+      var c = cl[k], n = c.orders.length;
+      c.inOrders = c.orders.filter(function(x) { return gaGiftHasBonus(x.o); }).length;
+      c.earned = Math.floor(n / 3);
+      c.given = c.inOrders + c.manual;
+      c.owed = Math.max(0, c.earned - c.given);
+      c.toNext = 3 - (n % 3);                                        // через сколько заказов следующий подарок
+      c.docKey = c.email || (gaGiftPhoneKey(c.phone) ? "tel_" + gaGiftPhoneKey(c.phone) : "");
+      c.manualKey = manual[c.email ? "e:" + c.email : "t:" + gaGiftPhoneKey(c.phone)] || 0; // счётчик именно в этом документе gifts
+      c.last = n ? c.orders[n - 1].ts : 0;
+      return c;
+    });
+    var cOwed = rows.filter(function(c) { return c.owed > 0; }).length;
+    var cSoon = rows.filter(function(c) { return c.owed === 0 && c.toNext === 1; }).length;
+    var cGot  = rows.filter(function(c) { return c.given > 0; }).length;
+    var list = rows.filter(function(c) {
+      if (_gfFilter === "owed") return c.owed > 0;
+      if (_gfFilter === "soon") return c.owed === 0 && c.toNext === 1;
+      if (_gfFilter === "got") return c.given > 0;
+      return true;
+    });
+    list.sort(function(a, b) { return (b.owed - a.owed) || (b.last - a.last); });
+
+    var tab = function(id, label, cnt, clr) {
+      var on = _gfFilter === id;
+      return '<button onclick="gaGiftSetFilter(\'' + id + '\')" style="padding:6px 11px;border-radius:100px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid ' + (on ? clr : 'rgba(79,195,247,.2)') + ';background:' + (on ? clr + '22' : 'transparent') + ';color:' + (on ? clr : '#a0bcd4') + '">' + label + ' <b>' + cnt + '</b></button>';
+    };
+    var out = '<div style="font-size:11px;color:#a0bcd4;line-height:1.5;margin-bottom:10px">Правило: каждый <b style="color:#ffd54f">3-й, 6-й, 9-й…</b> оформленный заказ клиента — 100 г корма. '
+      + 'В такой заказ строка «🎁 Бонус» добавляется сама (если клиент вошёл на сайт). «Дали» = заказы с бонусом + ручная выдача кнопкой.</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'
+      + tab("owed", "Должны", cOwed, "#81c784") + tab("soon", "Следующий — 3-й", cSoon, "#ffd54f")
+      + tab("got", "Уже дали", cGot, "#4fc3f7") + tab("all", "Все", rows.length, "#a0bcd4") + '</div>';
+    if (!list.length) out += '<div style="text-align:center;padding:1.5rem;color:#7a9bbf;font-size:12px">' + (_gfFilter === "owed" ? "✅ Никому не должны" : "Нет клиентов") + '</div>';
+    list.forEach(function(c) {
+      var badge = c.owed > 0 ? '<span style="background:rgba(129,199,132,.15);color:#81c784;border:1px solid rgba(129,199,132,.4);border-radius:100px;padding:2px 9px;font-size:11px;font-weight:700">Должны: ' + c.owed + '</span>'
+        : (c.toNext === 1 ? '<span style="background:rgba(255,213,79,.12);color:#ffd54f;border-radius:100px;padding:2px 9px;font-size:11px;font-weight:700">Следующий заказ — с подарком</span>'
+        : '<span style="color:#7a9bbf;font-size:11px">До подарка: ещё ' + c.toNext + ' зак.</span>');
+      var chips = c.orders.map(function(x, i) {
+        var pos = i + 1, gift = (pos % 3 === 0), has = gaGiftHasBonus(x.o);
+        var d = x.dt ? ('0' + x.dt.getDate()).slice(-2) + '.' + ('0' + (x.dt.getMonth() + 1)).slice(-2) + '.' + String(x.dt.getFullYear()).slice(-2) : '—';
+        var st = x.o.status === "completed" ? "✓" : (x.o.status === "working" ? "⏳" : "•");
+        var clr = has ? '#81c784' : (gift ? '#ff8a65' : '#7a9bbf');
+        var tip = (gift ? (has ? 'подарок в заказе' : 'подарка в заказе нет') : '') ;
+        return '<span title="' + gaGiftEsc(tip) + '" style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:10.5px;color:' + clr + ';background:' + (gift ? 'rgba(255,255,255,.04)' : 'transparent') + ';border:1px solid ' + (gift ? clr + '66' : 'rgba(79,195,247,.08)') + '">'
+          + '<b>#' + pos + '</b> ' + d + ' ' + st + (has ? ' 🎁' : (gift ? ' ✗' : '')) + '</span>';
+      }).join(' ');
+      out += '<div style="background:#111e33;border:1px solid ' + (c.owed > 0 ? 'rgba(129,199,132,.35)' : 'rgba(79,195,247,.1)') + ';border-radius:10px;padding:11px 12px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'
+        +   '<div style="min-width:0"><b style="color:#e8f4fd;font-size:13px">' + gaGiftEsc(c.name || c.email || c.phone || "—") + '</b>'
+        +     '<div style="font-size:11px;color:#7a9bbf">' + gaGiftEsc([c.phone, c.email].filter(Boolean).join(" · ")) + '</div></div>'
+        +   '<div style="text-align:right">' + badge
+        +     '<div style="font-size:10.5px;color:#7a9bbf;margin-top:4px">Заказов: <b style="color:#4fc3f7">' + c.orders.length + '</b> · положено: <b>' + c.earned + '</b> · дали: <b style="color:#81c784">' + c.given + '</b>'
+        +     (c.manual ? ' <span title="вручную">(вручную ' + c.manual + ')</span>' : '') + '</div></div>'
+        + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">' + chips + '</div>'
+        + (c.docKey ? '<div style="margin-top:8px;text-align:right"><button data-k="' + encodeURIComponent(c.docKey) + '" data-e="' + encodeURIComponent(c.email || "") + '" data-n="' + encodeURIComponent(c.name || "") + '" data-p="' + encodeURIComponent(c.phone || "") + '" data-g="' + (c.manualKey || 0) + '" '
+        +   'onclick="giveGift(decodeURIComponent(this.dataset.e),decodeURIComponent(this.dataset.n),decodeURIComponent(this.dataset.p),+this.dataset.g,true,decodeURIComponent(this.dataset.k))" '
+        +   'style="padding:5px 12px;border-radius:8px;border:none;background:' + (c.owed > 0 ? 'linear-gradient(90deg,#81c784,#4caf50);color:#fff' : 'rgba(79,195,247,.12);color:#a0bcd4') + ';font-weight:700;font-size:11.5px;cursor:pointer">🎁 Отметить: выдал 100 г вручную</button></div>' : '')
+        + '</div>';
+    });
+    out += '<div style="font-size:10.5px;color:#4a6a8a;margin-top:8px">#3 ✗ — третий заказ без строки подарка (клиент оформил без входа или подарок не добавился). 🎁 — подарок в заказе. ✓ завершён · ⏳ в работе · • новый</div>';
     wrap.innerHTML = out;
-  }).catch(function(e){ wrap.innerHTML='<p style="color:#ff8888">Error: '+e.message+'</p>'; });
+  }).catch(function(e){ wrap.innerHTML='<p style="color:#ff8888">Error: '+gaGiftEsc(e.message)+'</p>'; });
 }
 
 function renderGiftRows(wrap, rows, givenMap) {
@@ -10280,12 +10370,15 @@ function renderGiftRows(wrap, rows, givenMap) {
   renderGiftsPanel();
 }
 
-function giveGift(email, name, phone, currentGiven, manual) {
+function giveGift(email, name, phone, currentGiven, manual, docKey) {
   if (!fbDb) return;
+  var _gid = docKey || email;
+  if (!_gid) { showToast("Нет email или телефона клиента"); return; }
+  if (manual && !confirm("Отметить, что вы выдали " + (name || _gid) + " 100 г корма вручную?")) return;
   var newCount = (currentGiven || 0) + 1;
   var reason = manual ? "manual gift" : "earned gift";
 
-  fbDb.collection("gifts").doc(email).set({
+  fbDb.collection("gifts").doc(_gid).set({
     email: email, name: name, phone: phone,
     giftsGiven: newCount,
     lastGiftAt: new Date().toISOString(),
@@ -13033,8 +13126,8 @@ function gaMeStatusHtml(st) {
     });
     h += '</div>';
   }
-  var nGift = st.done % 3 + 1;
-  if (st.done > 0 && st.done % 3 === 0) h += '<div class="ga-me-gift ok"><span>🎁</span><span>' + (ro ? "Cadou: 100 g hrană — îl primiți cu comanda următoare" : "Подарок: 100 г корма — заберите со следующим заказом") + '</span></div>';
+  var nGift = st.orders.length % 3 + 1;
+  if (nGift === 3) h += '<div class="ga-me-gift ok"><span>🎁</span><span>' + (ro ? "Următoarea comandă e a 3-a — <b>100 g hrană cadou</b> o adăugăm automat" : "Следующий заказ — 3-й: <b>100 г корма в подарок</b> добавим автоматически") + '</span></div>';
   else h += '<div class="ga-me-gift"><span>🎁</span><span>' + (ro ? "Comanda " + nGift + " din 3 — la a 3-a <b>100 g hrană cadou</b>" : "Заказ " + nGift + " из 3 — на третьем <b>100 г корма бесплатно</b>") + '</span></div>';
   var hasLast = st.orders.some(function(o) { return Array.isArray(o.itemsData) && o.itemsData.length; });
   if (hasLast) h += '<button type="button" class="ga-me-rep" data-me="repeat"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>' + (ro ? "Repetă ultima comandă" : "Повторить последний заказ") + '</button>';
