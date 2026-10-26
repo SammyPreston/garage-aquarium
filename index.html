@@ -3923,6 +3923,28 @@ function gaOrdersAll() {
   });
 }
 
+// 26.10.2026: остаток в деньгах — закупка из инвойса; продажа — текущий прайс карточки (без акций), иначе цена из инвойса
+function gaStockValue(s, rem) {
+  rem = Math.max(0, Number(rem) || 0);
+  var bp = Number(s && s.buyPrice) || 0;
+  var sp = 0;
+  if (s && s._cardId != null && typeof _origGetPrice === "function") sp = Number(_origGetPrice(s._cardId)) || 0;
+  if (!sp) sp = Number(s && s.sellPrice) || 0;
+  return { qty: rem, buy: Math.round(rem * bp), sell: Math.round(rem * sp), hasBuy: bp > 0 };
+}
+function gaStockValueTotal(summary) {
+  var t = { buy: 0, sell: 0, qty: 0, noPrice: 0 };
+  if (!summary || typeof summary !== "object") return t;
+  Object.keys(summary).forEach(function(k) {
+    var s = summary[k]; if (!s) return;
+    var rem = (Number(s.incoming) || 0) - (Number(s.sold) || 0) - (Number(s.writeoff) || 0);
+    if (rem <= 0) return;
+    var v = gaStockValue(s, rem);
+    t.buy += v.buy; t.sell += v.sell; t.qty += v.qty;
+    if (!v.hasBuy) t.noPrice++;
+  });
+  return t;
+}
 function syncStockFromLedger() {
   if (!fbDb) return Promise.resolve(null);
   return Promise.all([
@@ -3985,9 +4007,10 @@ function renderStockPanel() {
         + '<thead><tr style="color:#4fc3f7;border-bottom:1px solid rgba(79,195,247,.15)">'
         + '<th style="text-align:left;padding:5px 3px">Позиция</th>'
         + '<th style="text-align:center;padding:5px 3px">Приход</th>'
-        + '<th style="text-align:center;padding:5px 3px">Продано</th>'
         + '<th style="text-align:center;padding:5px 3px">Списано</th>'
+        + '<th style="text-align:center;padding:5px 3px">Продано</th>'
         + '<th style="text-align:center;padding:5px 3px">Остаток</th>'
+        + '<th style="text-align:center;padding:5px 3px" title="Остаток × закупочная цена (в подсказке — по цене продажи)">Ост., MDL</th>'
         + '<th style="text-align:center;padding:5px 3px">Вход</th>'
         + '<th style="text-align:center;padding:5px 3px">Продажа</th>'
         + '<th style="text-align:center;padding:5px 3px">Прибыль</th>'
@@ -4015,6 +4038,10 @@ function renderStockPanel() {
                 : '<span style="color:#4a6a8a">0</span>')
           + '</td>'
           + '<td style="text-align:center;padding:5px 3px;font-weight:700;color:' + remColor + '">' + Math.max(0, rem) + '</td>'
+          + (function() {
+              var v = gaStockValue(s, rem);
+              return '<td style="text-align:center;padding:5px 3px;color:#ffd54f;white-space:nowrap" title="' + (v.sell > 0 ? 'По цене продажи: ' + v.sell + ' MDL' : '') + '">' + (v.buy > 0 ? v.buy : (rem > 0 ? '<span style="color:#4a6a8a" title="Нет закупочной цены в инвойсе">?</span>' : '—')) + '</td>';
+            })()
           + '<td style="text-align:center;padding:5px 3px;color:#ffd54f">' + (s.buyPrice > 0 ? s.buyPrice : '—') + '</td>'
           + '<td style="text-align:center;padding:5px 3px;color:#4fc3f7">' + (s.sellPrice > 0 ? s.sellPrice : '—') + '</td>'
           + '<td style="text-align:center;padding:5px 3px;font-weight:600;color:' + (profit > 0 ? '#81c784' : '#7a9bbf') + '">' + (profit > 0 ? '+' + profit : '—') + '</td>'
@@ -4067,6 +4094,14 @@ function renderStockPanel() {
       + (function() {
           var _nc = keys.filter(function(k) { return summary[k] && !summary[k]._cardId; }).length;
           return _nc ? '<div style="font-size:11px;color:#ff8a80;background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.25);border-radius:6px;padding:6px 8px;margin-bottom:8px">&#9888; Позиций без карточки: ' + _nc + ' — их остаток не попадает на витрину. Откройте инвойс → «Изменить» и выберите рыбку из списка заново.</div>' : '';
+        })()
+      + (function() {
+          var t = gaStockValueTotal(summary);
+          return '<div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:#a0bcd4;background:#0d1c30;border:1px solid rgba(255,213,79,.2);border-radius:8px;padding:8px 10px;margin-bottom:8px">'
+            + '<span>&#128176; Остаток на сумму: <b style="color:#ffd54f">' + t.buy + ' MDL</b> по закупке</span>'
+            + '<span><b style="color:#4fc3f7">' + t.sell + ' MDL</b> по цене продажи</span>'
+            + '<span>' + t.qty + ' шт</span>'
+            + (t.noPrice ? '<span style="color:#7a9bbf">без закупочной цены: ' + t.noPrice + ' поз.</span>' : '') + '</div>';
         })()
       + summaryHtml
       // History
@@ -6305,9 +6340,21 @@ function renderAdminStats() {
 
   Promise.all([
     gaOrdersAll(),
-    fbDb.collection("invoices").get().catch(function(){ return { docs: [] }; })
+    fbDb.collection("invoices").get().catch(function(){ return { docs: [] }; }),
+    fbDb.collection("writeoffs").get().catch(function(){ return { docs: [] }; })
   ]).then(function(_res) {
     var snap = _res[0];
+    // 26.10.2026: остаток на складе в деньгах (тот же расчёт, что во вкладке «Склад»)
+    var _stockT = null;
+    try {
+      var _sInv = (_res[1].docs || []).map(function(d){ return Object.assign({_id: d.id}, d.data()); });
+      var _sOrd = (Array.isArray(snap.docs) ? snap.docs : []).map(function(d){ return d.data(); });
+      var _sSum = calcStockSummary(_sInv, _sOrd);
+      var _sWo = (typeof gaWriteoffMap === "function") ? gaWriteoffMap(_res[2]) : {};
+      Object.keys(_sSum).forEach(function(nm){ var x = _sSum[nm]; if (x) x.writeoff = (_sWo[String(x.fishId)] || 0) + (_sWo['n:' + nm] || 0); });
+      if (typeof gaFindCard === "function") Object.keys(_sSum).forEach(function(nm){ var x = _sSum[nm]; if (x && x._cardId == null) { var c = gaFindCard(x.fishId, nm); if (c && c.id != null) x._cardId = c.id; } });
+      _stockT = gaStockValueTotal(_sSum);
+    } catch (e) { _stockT = null; }
     // Карта закупочных цен по названию позиции (из инвойсов)
     var buyMap = {};
     (_res[1].docs || []).forEach(function(doc) {
@@ -6408,7 +6455,14 @@ function renderAdminStats() {
             ? '<div style="font-size:10px;color:#ffd54f;margin-top:5px">&#9888; Учтено ' + Math.round(revKnown) + ' из ' + Math.round(revParsed)
               + ' MDL выручки (' + coverage + '%) — у остальных позиций нет закупочной цены в инвойсах</div>'
             : '<div style="font-size:10px;color:#81c784;margin-top:5px">&#10003; Закупочные цены известны по всем позициям</div>')
-      + '</div>';
+      + '</div>'
+      + (_stockT ? '<div style="background:#0d1c30;border:1px solid rgba(255,213,79,.2);border-radius:10px;padding:12px;text-align:center;margin:-8px 0 16px">'
+        +   '<div style="font-size:20px;font-weight:700;color:#ffd54f">' + _stockT.buy + ' MDL</div>'
+        +   '<div style="font-size:11px;color:#7a9bbf;margin-top:2px">&#128230; Остаток на складе (по закупке)</div>'
+        +   '<div style="display:flex;justify-content:center;gap:14px;margin-top:6px;font-size:10px;color:#4a6a8a">'
+        +     '<span>по цене продажи ' + _stockT.sell + '</span><span>' + _stockT.qty + ' шт</span>'
+        +     (_stockT.noPrice ? '<span>без закупки: ' + _stockT.noPrice + ' поз.</span>' : '')
+        +   '</div><div style="font-size:10px;color:#4a6a8a;margin-top:4px">по каждой рыбке — во вкладке «Склад», колонка «Ост., MDL»</div></div>' : '');
 
     // ===== ИСТОРИЯ ПРОДАЖ: месяцы -> развернуть в дни, за всё время =====
     if (dayKeys.length) {
@@ -8610,6 +8664,7 @@ var items = itemsArr.map(function(x) {
   if (status !== "completed") actionBtns += '<button onclick="updateOrderStatus(\'' + d._id + '\',\'completed\')" style="' + btnStyle("#81c784") + '">\u2705 Complete</button>';
   if (status !== "pending")   actionBtns += '<button onclick="updateOrderStatus(\'' + d._id + '\',\'pending\')" style="' + btnStyle("#ffd54f") + '">\uD83D\uDD04 Reset</button>';
   actionBtns += '<button onclick="printReceipt(\'' + d._id + '\')" style="' + btnStyle("#ffd54f") + '">&#129534; Чек</button>';
+  actionBtns += '<button onclick="gaSendOrderOpen(\'' + d._id + '\')" title="Отправить заявку в Viber / Telegram / WhatsApp по номеру" style="' + btnStyle("#81c784") + '">&#128228; Отправить</button>';
   actionBtns += '<button onclick="openOrderEditor(\'' + d._id + '\')" style="' + btnStyle("#ce93d8") + '">&#9998; Edit</button>';
   actionBtns += '<button onclick="deleteOrder(\'' + d._id + '\')" style="' + btnStyle("#ff5252") + '">&#128465; Delete</button>';
 
@@ -8705,12 +8760,15 @@ function buildOrderEditorOptions() {
     if (!document.getElementById("card" + f.id)) continue; // only rendered cards
     if (stock[String(f.id)] === false) continue;           // skip out-of-stock
     var price = (typeof _origGetPrice === "function") ? _origGetPrice(f.id) : (f.price || 0);
-    list.push({ id: f.id, name: f.name || ("#" + f.id), price: price || 0 });
+    // 26.10.2026: показываем цену с акцией карточки — так же, как её видит покупатель и как она добавится в заявку
+    var cdisc = (typeof getCardDiscount === "function") ? (getCardDiscount(f.id) || 0) : 0;
+    list.push({ id: f.id, name: f.name || ("#" + f.id), price: price || 0, disc: cdisc });
   }
   list.sort(function(a, b){ return String(a.name).localeCompare(String(b.name)); });
   list.forEach(function(it) {
     var safe = String(it.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    opts += '<option value="' + it.id + '">' + safe + ' — ' + it.price + ' MDL</option>';
+    var lbl = it.disc > 0 ? (Math.round(it.price * (1 - it.disc / 100)) + ' MDL (акция −' + it.disc + '%, прайс ' + it.price + ')') : (it.price + ' MDL');
+    opts += '<option value="' + it.id + '">' + safe + ' — ' + lbl + '</option>';
   });
   return opts;
 }
@@ -13434,6 +13492,77 @@ window.addEventListener("load", function() {
     toggleLang = window.toggleLang;
   }
 });
+
+// ===== 26.10.2026: отправить заявку человеку в WhatsApp / Viber / Telegram по номеру телефона =====
+function gaPhoneIntl(p) {
+  var d = String(p || "").replace(/\D/g, "");
+  if (!d) return "";
+  if (d.indexOf("373") === 0 && d.length === 11) return d;
+  if (d.length === 9 && d.charAt(0) === "0") return "373" + d.slice(1);
+  if (d.length === 8) return "373" + d;
+  return d;                                   // иностранный номер — как ввели
+}
+function gaOrderText(d) {
+  var ro = gaLangNow() === "ro", T = function(a, b) { return ro ? b : a; };
+  var dt = (typeof parseOrderDate === "function") ? parseOrderDate(d) : null;
+  var ds = dt ? ("0" + dt.getDate()).slice(-2) + "." + ("0" + (dt.getMonth() + 1)).slice(-2) + "." + dt.getFullYear() : "";
+  var lines = (Array.isArray(d.items) ? d.items : String(d.items || "").split("\n")).filter(function(l) { return String(l).trim(); });
+  var t = "🐠 Garage Aquarium Shop\n" + T("Ваш заказ", "Comanda dvs.") + (ds ? " " + T("от", "din") + " " + ds : "") + "\n\n";
+  t += lines.map(function(l) { return "• " + gaLocLine(String(l).replace(/^[^0-9A-Za-zА-Яа-яЁё]+/, "").trim()); }).join("\n") + "\n\n";
+  var urg = parseInt(d.urgency, 10) || 0;
+  if (urg > 0) t += "⚡ " + T("Срочная доставка", "Livrare urgentă") + " +" + urg + " MDL\n";
+  var dd = String(d.deliveryDate || "").replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$3.$2.$1");
+  if (dd || d.deliveryTime) t += "🚚 " + T("Доставка", "Livrare") + ": " + (dd + " " + (d.deliveryTime || "")).trim() + "\n";
+  if (d.payment) t += "💳 " + T("Оплата", "Plata") + ": " + ((ro && typeof window.i18nGet === "function") ? window.i18nGet(d.payment) : d.payment) + "\n";
+  var dp = parseInt(d.discountPct, 10) || 0;
+  if (dp > 0) t += "🏷️ " + T("Ваша скидка", "Reducerea dvs.") + ": −" + dp + "%\n";
+  t += "💰 " + T("Итого", "Total") + ": " + (Number(d.total) || 0) + " MDL\n\n";
+  t += T("Спасибо за заказ! Вопросы — +373 78 707 118", "Mulțumim pentru comandă! Întrebări — +373 78 707 118");
+  return t;
+}
+function gaSendOrderOpen(orderId) {
+  if (!fbDb) { showToast("Firebase не подключён"); return; }
+  fbDb.collection("orders").doc(orderId).get().then(function(doc) {
+    if (!doc.exists) { showToast("Заказ не найден"); return; }
+    var d = doc.data() || {};
+    var old = document.getElementById("ga-send-ov"); if (old) old.remove();
+    var m = document.createElement("div");
+    m.id = "ga-send-ov";
+    m.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;display:flex;align-items:center;justify-content:center;padding:14px";
+    var btn = function(app, label, bg) { return '<button type="button" data-app="' + app + '" style="flex:1;min-width:120px;height:42px;border-radius:10px;border:none;background:' + bg + ';color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif">' + label + '</button>'; };
+    m.innerHTML = '<div style="background:#111e33;border:1px solid rgba(129,199,132,.35);border-radius:16px;width:100%;max-width:440px;max-height:90vh;overflow:auto;padding:16px;position:relative">'
+      + '<button type="button" data-app="close" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#7a9bbf;font-size:22px;cursor:pointer">&times;</button>'
+      + '<div style="font-size:15px;font-weight:700;color:#e8f4fd;margin-bottom:10px">&#128228; Отправить заявку</div>'
+      + '<label style="font-size:11px;color:#7a9bbf">Номер телефона (можно изменить — например, курьеру)</label>'
+      + '<input id="ga-send-ph" type="tel" value="' + gaPackEsc(d.phone || "") + '" style="width:100%;box-sizing:border-box;margin:4px 0 10px;padding:9px 10px;border-radius:8px;border:1px solid rgba(79,195,247,.25);background:#0d1c30;color:#e8f4fd;font-size:14px;font-family:DM Sans,sans-serif">'
+      + '<label style="font-size:11px;color:#7a9bbf">Текст (можно поправить)</label>'
+      + '<textarea id="ga-send-tx" rows="11" style="width:100%;box-sizing:border-box;margin:4px 0 10px;padding:9px 10px;border-radius:8px;border:1px solid rgba(79,195,247,.25);background:#0d1c30;color:#e8f4fd;font-size:12.5px;line-height:1.45;font-family:DM Sans,sans-serif;resize:vertical">' + gaPackEsc(gaOrderText(d)) + '</textarea>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:8px">' + btn("wa", "WhatsApp", "#25D366") + btn("vb", "Viber", "#7360F2") + btn("tg", "Telegram", "#229ED9") + btn("cp", "Копировать", "#2a4a63") + '</div>'
+      + '<div style="font-size:10.5px;color:#4a6a8a;margin-top:8px;line-height:1.45">WhatsApp откроется сразу с текстом. В Viber и Telegram текст копируется — откроется чат с этим номером, вставьте текст (Ctrl+V) и отправьте. Telegram откроет чат, только если номер есть в Telegram и не скрыт настройками приватности.</div>'
+      + '</div>';
+    document.body.appendChild(m);
+    var copy = function(txt) {
+      var fb = function() { var ta = document.getElementById("ga-send-tx"); if (ta) { ta.select(); try { document.execCommand("copy"); } catch (e) {} } };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt).catch(fb); } catch (e) {}
+      fb();
+      return Promise.resolve();
+    };
+    var go = function(url) { var a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); };
+    m.addEventListener("click", function(e) {
+      if (e.target === m) { m.remove(); return; }
+      var b = e.target.closest ? e.target.closest("[data-app]") : null; if (!b) return;
+      var app = b.getAttribute("data-app");
+      if (app === "close") { m.remove(); return; }
+      var ph = gaPhoneIntl((document.getElementById("ga-send-ph") || {}).value);
+      var tx = (document.getElementById("ga-send-tx") || {}).value || "";
+      if (app !== "cp" && !ph) { showToast("Укажите номер телефона"); return; }
+      if (app === "wa") go("https://wa.me/" + ph + "?text=" + encodeURIComponent(tx));
+      else if (app === "vb") copy(tx).then(function() { showToast("Текст скопирован — вставьте в чат Viber"); go("viber://chat?number=%2B" + ph); });
+      else if (app === "tg") copy(tx).then(function() { showToast("Текст скопирован — вставьте в чат Telegram"); go("https://t.me/+" + ph); });
+      else if (app === "cp") copy(tx).then(function() { showToast("Текст скопирован"); });
+    });
+  }).catch(function(e) { showToast("Ошибка: " + e.message); });
+}
 
 // ===== запуск =====
 gaPacksSet(GA_PACKS_DEFAULT);
