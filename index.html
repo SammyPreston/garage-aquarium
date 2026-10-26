@@ -4879,7 +4879,7 @@ async function sendOrder() {
   if (addr) msg += "\u{1F3E0} " + addr + "\n";
   msg += "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n";
   msg += "\u{1F6D2} " + L("\u0421\u041E\u0421\u0422\u0410\u0412", "CON\u021AINUT") + ":\n";
-  msg += lines.join("\n");
+  msg += ((typeof gaUnitText === "function") ? lines.map(function(_l) { return gaUnitText(_l, oLang === "ro"); }) : lines).join("\n");
   msg += "\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n";
   if (dDate || dTime) msg += "\u{1F69A} " + L("\u0414\u043E\u0441\u0442\u0430\u0432\u043A\u0430", "Livrare") + ": " + (dDate ? dDate : "") + (dTime ? (" " + dTime) : "") + "\n";
   if (urgVal === 100) msg += "\u26A1 " + L("\u0421\u0440\u043E\u0447\u043D\u044B\u0439 \u0437\u0430\u043A\u0430\u0437", "Comand\u0103 urgent\u0103") + " (+100 MDL)\n";
@@ -8685,7 +8685,7 @@ function buildOrderCard(d) {
   : String(d.items || "").split(",");
 
 var items = itemsArr.map(function(x) {
-  return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">• ' + String(x).trim() + '</div>';
+  return '<div style="font-size:11px;color:#a0bcd4;padding:1px 0">• ' + ((typeof gaUnitHtml === "function") ? gaUnitHtml(String(x).trim(), false) : String(x).trim()) + '</div>';
 }).join("");
 
   var actionBtns = "";
@@ -9164,7 +9164,7 @@ function resendOrderTelegram(orderId) {
   if (d.phone) msg += '\uD83D\uDCDE ' + d.phone + '\n';
   if (d.city) msg += '\uD83D\uDCCD ' + d.city + '\n';
   if (d.address) msg += '\uD83C\uDFE0 ' + d.address + '\n';
-  msg += sep + '\n\uD83D\uDED2 ' + _tgL('СОСТАВ', 'CONȚINUT') + ':\n' + lines.join('\n') + '\n' + sep + '\n';
+  msg += sep + '\n\uD83D\uDED2 ' + _tgL('СОСТАВ', 'CONȚINUT') + ':\n' + ((typeof gaUnitText === 'function') ? lines.map(function(_l) { return gaUnitText(_l, _oeRo); }) : lines).join('\n') + '\n' + sep + '\n';
   if (fullTotal !== total) msg += '\uD83D\uDCB5 ' + _tgL('Сумма по прайсу', 'Suma fără reducere') + ': ' + fullTotal + ' MDL\n';
   if (_tgUrg > 0) msg += '⚡ ' + _tgL('Срочная заявка', 'Comandă urgentă') + ': +' + _tgUrg + ' MDL\n';
   if (d.delivery === 'yandex') msg += '🚕 ' + _tgL('Доставка: курьер Yandex (оплата при получении)', 'Livrare: curier Yandex (plata la primire)') + '\n';
@@ -9420,7 +9420,7 @@ function renderOrdersList(list, orders) {
     var st = statusMap[o.status || "pending"] || statusMap.pending;
     var itemsArr = Array.isArray(o.items) ? o.items : String(o.items || "").split(",");
     itemsArr = itemsArr.filter(function(x){ return String(x).trim(); });
-    var items = itemsArr.map(function(x) { return '<li>' + ((typeof gaLocLine === "function") ? gaLocLine(String(x).trim()) : String(x).trim()) + '</li>'; }).join("");
+    var items = itemsArr.map(function(x) { var _t = (typeof gaLocLine === "function") ? gaLocLine(String(x).trim()) : String(x).trim(); return '<li>' + ((typeof gaUnitHtml === "function") ? gaUnitHtml(_t) : _t) + '</li>'; }).join("");
     return '<div class="ga-ord">'
       +   '<div class="ga-ord-top">'
       +     '<span class="ga-ord-date">' + (o.date || "&mdash;") + '</span>'
@@ -11274,7 +11274,7 @@ function gaViewOrder(i){
     var tag=_ld>0
       ? '<span class="ga-ov-tag on">со скидкой '+_ld+'%</span>'
       : '<span class="ga-ov-tag off">без скидки</span>';
-    return '<div class="ga-ov-row"><span class="ga-ov-n">'+(n+1)+'</span><span class="ga-ov-t">'+t+'</span>'+tag+'</div>';
+    return '<div class="ga-ov-row"><span class="ga-ov-n">'+(n+1)+'</span><span class="ga-ov-t">'+((typeof gaUnitHtml==='function')?gaUnitHtml(t):t)+'</span>'+tag+'</div>';
   }).join('');
   var old=document.getElementById('ga-ov'); if(old)old.remove();
   var m=document.createElement('div');
@@ -11296,7 +11296,7 @@ function gaReceipt(i){
   var o=(window.GA_ORDERS||[])[i]; if(!o)return;
   var items=Array.isArray(o.items)?o.items:String(o.items||'').split(',');
   items=items.filter(function(x){return String(x).trim();});
-  var rows=items.map(function(x){return '<div class="it">'+((typeof gaLocLine==='function')?gaLocLine(String(x).trim()):String(x).trim())+'</div>';}).join('');
+  var rows=items.map(function(x){var _t=(typeof gaLocLine==='function')?gaLocLine(String(x).trim()):String(x).trim();return '<div class="it">'+((typeof gaUnitHtml==='function')?gaUnitHtml(_t):_t)+'</div>';}).join('');
   var stamp='<svg class="stamp" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">'
    +'<defs><path id="tu" d="M75,75 m-58,0 a58,58 0 1,1 116,0"/><path id="td" d="M75,75 m-48,0 a48,48 0 1,0 96,0"/></defs>'
    +'<circle cx="75" cy="75" r="70" fill="none" stroke="#0e7c68" stroke-width="3"/>'
@@ -13169,7 +13169,7 @@ function gaMeHistHtml(st) {
     var canRep = Array.isArray(o.itemsData) && o.itemsData.length;
     h += '<details class="ga-me-ord"><summary><span class="ga-me-od">' + (gaMeDate(o.createdAt) || "—") + '</span>'
       + '<span class="ga-me-os ' + sm[1] + '">' + sm[0] + '</span><b>' + (Number(o.total) || 0) + ' MDL</b><i>›</i></summary>'
-      + '<ul>' + lines.map(function(l) { return '<li>' + gaPackEsc(gaLocLine(String(l).replace(/^[^0-9A-Za-zА-Яа-яЁё]+/, ""))) + '</li>'; }).join("") + '</ul>'
+      + '<ul>' + lines.map(function(l) { return '<li>' + gaUnitHtml(gaPackEsc(gaLocLine(String(l).replace(/^[^0-9A-Za-zА-Яа-яЁё]+/, "")))) + '</li>'; }).join("") + '</ul>'
       + (canRep ? '<button type="button" class="ga-me-ghost" data-me="reporder" data-i="' + i + '">' + (ro ? "Repetă această comandă" : "Повторить этот заказ") + '</button>' : '')
       + '</details>';
   });
@@ -13539,7 +13539,7 @@ function gaOrderText(d) {
   var sep = "────────────";
   var lines = (Array.isArray(d.items) ? d.items : String(d.items || "").split("\n"))
     .filter(function(l) { return String(l).trim(); })
-    .map(function(l) { return gaLocLine(String(l).trim()); });
+    .map(function(l) { return gaUnitText(gaLocLine(String(l).trim()), ro); });
   var urg = parseInt(d.urgency, 10) || 0, total = Number(d.total) || 0;
   var pay = d.payment ? ((ro && typeof window.i18nGet === "function") ? window.i18nGet(d.payment) : d.payment) : "";
   var msg;
@@ -13619,6 +13619,26 @@ function gaSendOrderOpen(orderId) {
       else if (app === "cp") copy(tx).then(function() { showToast("Текст скопирован"); });
     });
   }).catch(function(e) { showToast("Ошибка: " + e.message); });
+}
+
+// ===== 26.10.2026: цена за 1 шт в строках заявки (только отображение; в базе строки не меняются) =====
+// «✅ Неон Голубой x10 = 150 MDL (-10%)» → название + «10 шт × 15 MDL = 150 MDL (-10%)»
+function gaUnitParse(line) {
+  var m = /^(.*?)\s+[xх×](\d+)\s*=\s*(\d+(?:[.,]\d+)?)\s*MDL(.*)$/i.exec(String(line == null ? "" : line));
+  if (!m) return null;
+  var q = parseInt(m[2], 10) || 0, sum = parseFloat(String(m[3]).replace(",", ".")) || 0;
+  if (q <= 0 || sum <= 0) return null;                       // подарок (0 MDL) — без цены за штуку
+  return { name: m[1], q: q, sum: sum, unit: Math.round(sum / q * 100) / 100, tail: m[4] || "" };
+}
+function gaUnitStr(p, ro) { return p.q + " " + (ro ? "buc" : "шт") + " × " + p.unit + " MDL = " + p.sum + " MDL" + p.tail; }
+function gaUnitText(line, ro) {
+  var p = gaUnitParse(line);
+  return p ? (p.name + "\n      " + gaUnitStr(p, ro)) : String(line);
+}
+function gaUnitHtml(line, ro) {
+  if (ro === undefined) ro = (typeof gaLangNow === "function") && gaLangNow() === "ro";
+  var p = gaUnitParse(line);
+  return p ? (p.name + '<span style="display:block;font-size:.92em;opacity:.8;white-space:nowrap;padding-left:1.3em">' + gaUnitStr(p, ro) + '</span>') : String(line);
 }
 
 // ===== запуск =====
