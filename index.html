@@ -13623,7 +13623,7 @@ function gaSendOrderOpen(orderId) {
 }
 
 // ===== 26.10.2026: цена за 1 шт в строках заявки (только отображение; в базе строки не меняются) =====
-// «✅ Неон Голубой x10 = 150 MDL (-10%)» → название + «10 шт × 15 MDL = 150 MDL (-10%)»
+// «✅ Неон Голубой x10 = 150 MDL (-10%)» → «✅ Неон Голубой - 10 шт × 15 MDL = 150 MDL (-10%)» (одной строкой)
 function gaUnitParse(line) {
   var m = /^(.*?)\s+[xх×](\d+)\s*=\s*(\d+(?:[.,]\d+)?)\s*MDL(.*)$/i.exec(String(line == null ? "" : line));
   if (!m) return null;
@@ -13639,12 +13639,12 @@ function gaNoLatin(t) {
 function gaUnitStr(p, ro) { return p.q + " " + (ro ? "buc" : "шт") + " × " + p.unit + " MDL = " + p.sum + " MDL" + p.tail; }
 function gaUnitText(line, ro) {
   var p = gaUnitParse(line);
-  return p ? (gaNoLatin(p.name) + "\n      " + gaUnitStr(p, ro)) : gaNoLatin(line);
+  return p ? (gaNoLatin(p.name) + " - " + gaUnitStr(p, ro)) : gaNoLatin(line);   // одной строкой, как Sammy пишет вручную
 }
 function gaUnitHtml(line, ro) {
   if (ro === undefined) ro = (typeof gaLangNow === "function") && gaLangNow() === "ro";
   var p = gaUnitParse(line);
-  return p ? (gaNoLatin(p.name) + '<span style="display:block;font-size:.92em;opacity:.8;white-space:nowrap;padding-left:1.3em">' + gaUnitStr(p, ro) + '</span>') : gaNoLatin(line);
+  return p ? (gaNoLatin(p.name) + ' - <span style="white-space:nowrap">' + gaUnitStr(p, ro) + '</span>') : gaNoLatin(line);
 }
 
 // ===== запуск =====
