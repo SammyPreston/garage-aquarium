@@ -9241,6 +9241,7 @@ function buildReceiptHtml(d, orderId) {
     if (!qty || qty < 1) qty = 1;
     var name = (typeof parseItemName === "function") ? parseItemName(s) : s;
     if (typeof gaLocName === "function") name = gaLocName(name);
+    if (typeof gaNoLatin === "function") name = gaNoLatin(name);
     var mSum = s.match(/=\s*([0-9]+)\s*MDL/i);
     var line = mSum ? (parseInt(mSum[1]) || 0) : 0;
     var mDsc = s.match(/\(-\s*([0-9]{1,2})\s*%\)/);
@@ -13630,15 +13631,20 @@ function gaUnitParse(line) {
   if (q <= 0 || sum <= 0) return null;                       // подарок (0 MDL) — без цены за штуку
   return { name: m[1], q: q, sum: sum, unit: Math.round(sum / q * 100) / 100, tail: m[4] || "" };
 }
+// 26.10.2026: без научного названия в скобках (латиница): «Неон Голубой (Paracheirodon innesi)» → «Неон Голубой»;
+// русские уточнения и скидка остаются: «(красный)», «(Гло)», «(-10%)»
+function gaNoLatin(t) {
+  return String(t == null ? "" : t).replace(/\s*\([^()]*[A-Za-z][^()]*\)/g, "").replace(/[ \t]{2,}/g, " ").trim();
+}
 function gaUnitStr(p, ro) { return p.q + " " + (ro ? "buc" : "шт") + " × " + p.unit + " MDL = " + p.sum + " MDL" + p.tail; }
 function gaUnitText(line, ro) {
   var p = gaUnitParse(line);
-  return p ? (p.name + "\n      " + gaUnitStr(p, ro)) : String(line);
+  return p ? (gaNoLatin(p.name) + "\n      " + gaUnitStr(p, ro)) : gaNoLatin(line);
 }
 function gaUnitHtml(line, ro) {
   if (ro === undefined) ro = (typeof gaLangNow === "function") && gaLangNow() === "ro";
   var p = gaUnitParse(line);
-  return p ? (p.name + '<span style="display:block;font-size:.92em;opacity:.8;white-space:nowrap;padding-left:1.3em">' + gaUnitStr(p, ro) + '</span>') : String(line);
+  return p ? (gaNoLatin(p.name) + '<span style="display:block;font-size:.92em;opacity:.8;white-space:nowrap;padding-left:1.3em">' + gaUnitStr(p, ro) + '</span>') : gaNoLatin(line);
 }
 
 // ===== запуск =====
