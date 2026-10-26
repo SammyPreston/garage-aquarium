@@ -4859,7 +4859,9 @@ async function sendOrder() {
   // Бонус на каждый 3-й заказ (по email залогиненного)
   var _orderEmail = (fbAuth && fbAuth.currentUser && fbAuth.currentUser.email) ? fbAuth.currentUser.email : (window._loggedEmail || "");
   var bonusAdded = false;
-  if (_orderEmail && fbDb) {
+  // 26.10.2026: заказ оформляет админ (или аккаунт отчётов) — бонус не добавляем; подарок только клиентам из личного кабинета
+  var _isStaff = ["admin@garageaquarium.shop", "reports@garageaquarium.shop"].indexOf(String(_orderEmail).toLowerCase()) >= 0;
+  if (_orderEmail && fbDb && !_isStaff) {
     try {
       var prevSnap = await fbDb.collection("orders").where("email", "==", _orderEmail).get();
       if ((prevSnap.size + 1) % 3 === 0) {
@@ -10346,11 +10348,13 @@ function renderGiftsPanel() {
     var orders = [];
     (Array.isArray(r[2].docs) ? r[2].docs : []).forEach(function(doc) {
       var o = doc.data() || {};
-      if (o.source === "garage_quick") return;                       // продажа в гараже — не клиент
+      // 26.10.2026: считаем только заказы, оформленные клиентом из личного кабинета (вошёл на сайт).
+      // Заказы из админки, ручные продажи, гараж и гостевые заказы в подарки не идут.
+      if (o.source === "garage_quick" || o.source === "admin_manual") return;
       var em = String(o.email || "").trim().toLowerCase();
-      if (!em && o.uid && users[o.uid] && users[o.uid].email) em = users[o.uid].email; // ручная продажа клиенту
+      if (!em || em === "admin@garageaquarium.shop" || em === "reports@garageaquarium.shop") return;
+      if (o.uid === "guest" || o.uid === "admin") return;
       var tk = gaGiftPhoneKey(o.phone);
-      if (!em && !tk) return;                                        // не к кому привязать
       var node = em ? "e:" + em : "t:" + tk;
       find(node);
       if (em && tk) join("e:" + em, "t:" + tk);
@@ -10408,8 +10412,8 @@ function renderGiftsPanel() {
       var on = _gfFilter === id;
       return '<button onclick="gaGiftSetFilter(\'' + id + '\')" style="padding:6px 11px;border-radius:100px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid ' + (on ? clr : 'rgba(79,195,247,.2)') + ';background:' + (on ? clr + '22' : 'transparent') + ';color:' + (on ? clr : '#a0bcd4') + '">' + label + ' <b>' + cnt + '</b></button>';
     };
-    var out = '<div style="font-size:11px;color:#a0bcd4;line-height:1.5;margin-bottom:10px">Правило: каждый <b style="color:#ffd54f">3-й, 6-й, 9-й…</b> оформленный заказ клиента — 100 г корма. '
-      + 'В такой заказ строка «🎁 Бонус» добавляется сама (если клиент вошёл на сайт). «Дали» = заказы с бонусом + ручная выдача кнопкой.</div>'
+    var out = '<div style="font-size:11px;color:#a0bcd4;line-height:1.5;margin-bottom:10px">Правило: каждый <b style="color:#ffd54f">3-й, 6-й, 9-й…</b> заказ, который клиент оформил <b>из своего личного кабинета</b>, — 100 г корма. '
+      + 'Строка «🎁 Бонус» добавляется в такой заказ сама. Заказы из админки, ручные продажи и заказы без входа не считаются. «Дали» = заказы с бонусом + ручная выдача кнопкой.</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'
       + tab("owed", "Должны", cOwed, "#81c784") + tab("soon", "Следующий — 3-й", cSoon, "#ffd54f")
       + tab("got", "Уже дали", cGot, "#4fc3f7") + tab("all", "Все", rows.length, "#a0bcd4") + '</div>';
@@ -10441,7 +10445,7 @@ function renderGiftsPanel() {
         +   'style="padding:5px 12px;border-radius:8px;border:none;background:' + (c.owed > 0 ? 'linear-gradient(90deg,#81c784,#4caf50);color:#fff' : 'rgba(79,195,247,.12);color:#a0bcd4') + ';font-weight:700;font-size:11.5px;cursor:pointer">🎁 Отметить: выдал 100 г вручную</button></div>' : '')
         + '</div>';
     });
-    out += '<div style="font-size:10.5px;color:#4a6a8a;margin-top:8px">#3 ✗ — третий заказ без строки подарка (клиент оформил без входа или подарок не добавился). 🎁 — подарок в заказе. ✓ завершён · ⏳ в работе · • новый</div>';
+    out += '<div style="font-size:10.5px;color:#4a6a8a;margin-top:8px">#3 ✗ — третий заказ без строки подарка. 🎁 — подарок в заказе. ✓ завершён · ⏳ в работе · • новый</div>';
     wrap.innerHTML = out;
   }).catch(function(e){ wrap.innerHTML='<p style="color:#ff8888">Error: '+gaGiftEsc(e.message)+'</p>'; });
 }
@@ -13529,23 +13533,49 @@ function gaPhoneIntl(p) {
   if (d.length === 8) return "373" + d;
   return d;                                   // иностранный номер — как ввели
 }
+// текст заявки точь-в-точь как сообщение в Telegram: «🐠 НОВЫЙ ЗАКАЗ» (или «🔄 ИЗМЕНЁННЫЙ ЗАКАЗ», если заявку редактировали)
 function gaOrderText(d) {
-  var ro = gaLangNow() === "ro", T = function(a, b) { return ro ? b : a; };
-  var dt = (typeof parseOrderDate === "function") ? parseOrderDate(d) : null;
-  var ds = dt ? ("0" + dt.getDate()).slice(-2) + "." + ("0" + (dt.getMonth() + 1)).slice(-2) + "." + dt.getFullYear() : "";
-  var lines = (Array.isArray(d.items) ? d.items : String(d.items || "").split("\n")).filter(function(l) { return String(l).trim(); });
-  var t = "🐠 Garage Aquarium Shop\n" + T("Ваш заказ", "Comanda dvs.") + (ds ? " " + T("от", "din") + " " + ds : "") + "\n\n";
-  t += lines.map(function(l) { return "• " + gaLocLine(String(l).replace(/^[^0-9A-Za-zА-Яа-яЁё]+/, "").trim()); }).join("\n") + "\n\n";
-  var urg = parseInt(d.urgency, 10) || 0;
-  if (urg > 0) t += "⚡ " + T("Срочная доставка", "Livrare urgentă") + " +" + urg + " MDL\n";
-  var dd = String(d.deliveryDate || "").replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$3.$2.$1");
-  if (dd || d.deliveryTime) t += "🚚 " + T("Доставка", "Livrare") + ": " + (dd + " " + (d.deliveryTime || "")).trim() + "\n";
-  if (d.payment) t += "💳 " + T("Оплата", "Plata") + ": " + ((ro && typeof window.i18nGet === "function") ? window.i18nGet(d.payment) : d.payment) + "\n";
+  var ro = gaLangNow() === "ro", L = function(a, b) { return ro ? b : a; };
+  var sep = "────────────";
+  var lines = (Array.isArray(d.items) ? d.items : String(d.items || "").split("\n"))
+    .filter(function(l) { return String(l).trim(); })
+    .map(function(l) { return gaLocLine(String(l).trim()); });
+  var urg = parseInt(d.urgency, 10) || 0, total = Number(d.total) || 0;
+  var pay = d.payment ? ((ro && typeof window.i18nGet === "function") ? window.i18nGet(d.payment) : d.payment) : "";
+  var msg;
+  if (d.editedAt) {
+    msg = "🔄 " + L("ИЗМЕНЁННЫЙ ЗАКАЗ", "COMANDĂ MODIFICATĂ") + " - Garage Aquarium Shop\n" + sep + "\n";
+    if (d.name) msg += "👤 " + d.name + "\n";
+    if (d.phone) msg += "📞 " + d.phone + "\n";
+    if (d.city) msg += "📍 " + d.city + "\n";
+    if (d.address) msg += "🏠 " + d.address + "\n";
+    msg += sep + "\n🛒 " + L("СОСТАВ", "CONȚINUT") + ":\n" + lines.join("\n") + "\n" + sep + "\n";
+    var full = (Number(d.totalFull) || 0) - urg, sub = total - urg;
+    if (full > 0 && full !== sub) msg += "💵 " + L("Сумма по прайсу", "Suma fără reducere") + ": " + full + " MDL\n";
+    if (urg > 0) msg += "⚡ " + L("Срочная заявка", "Comandă urgentă") + ": +" + urg + " MDL\n";
+    if (d.delivery === "yandex") msg += "🚕 " + L("Доставка: курьер Yandex (оплата при получении)", "Livrare: curier Yandex (plata la primire)") + "\n";
+    if (pay) msg += "💳 " + L("Оплата", "Plata") + ": " + pay + "\n";
+    msg += "💰 " + ((full > 0 && full !== sub) ? L("ИТОГО со скидкой", "TOTAL cu reducere") : L("ИТОГО", "TOTAL")) + ": " + total + " MDL\n";
+    var nt = d.adminNote || d.note || "";
+    if (nt) msg += "💬 " + nt + "\n";
+    return msg + sep;
+  }
+  msg = "\u{1F420} " + L("НОВЫЙ ЗАКАЗ", "COMANDĂ NOUĂ") + " - Garage Aquarium Shop\n" + sep + "\n";
+  msg += "\u{1F464} " + (d.name || "") + "\n";
+  msg += "\u{1F4DE} " + (d.phone || "") + "\n";
+  msg += "\u{1F4CD} " + (d.city || "") + "\n";
+  if (d.address) msg += "\u{1F3E0} " + d.address + "\n";
+  msg += sep + "\n\u{1F6D2} " + L("СОСТАВ", "CONȚINUT") + ":\n" + lines.join("\n") + "\n" + sep + "\n";
+  if (d.deliveryDate || d.deliveryTime) msg += "\u{1F69A} " + L("Доставка", "Livrare") + ": " + (d.deliveryDate || "") + (d.deliveryTime ? (" " + d.deliveryTime) : "") + "\n";
+  if (urg === 100) msg += "⚡ " + L("Срочный заказ", "Comandă urgentă") + " (+100 MDL)\n";
+  else if (urg === 500) msg += "⚡⚡ " + L("Ультрасрочный заказ", "Comandă ultra-urgentă") + " (+500 MDL)\n";
+  if (d.delivery === "yandex") msg += "🚕 " + L("Курьер Yandex (оплата при получении)", "Curier Yandex (plata la primire)") + "\n";
+  if (pay) msg += "💳 " + L("Оплата", "Plata") + ": " + pay + "\n";
   var dp = parseInt(d.discountPct, 10) || 0;
-  if (dp > 0) t += "🏷️ " + T("Ваша скидка", "Reducerea dvs.") + ": −" + dp + "%\n";
-  t += "💰 " + T("Итого", "Total") + ": " + (Number(d.total) || 0) + " MDL\n\n";
-  t += T("Спасибо за заказ! Вопросы — +373 78 707 118", "Mulțumim pentru comandă! Întrebări — +373 78 707 118");
-  return t;
+  if (dp > 0) msg += "\u{1F4B3} " + L("Скидка клиента", "Reducere client") + ": -" + dp + "%\n";
+  msg += "\u{1F4B0} " + L("ИТОГО", "TOTAL") + ": " + total + " MDL\n";
+  if (d.note) msg += "\u{1F4AC} " + d.note + "\n";
+  return msg + sep;
 }
 function gaSendOrderOpen(orderId) {
   if (!fbDb) { showToast("Firebase не подключён"); return; }
