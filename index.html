@@ -3649,6 +3649,25 @@ function parseItemName(str) {
     .trim();
 }
 
+// 26.10.2026: ключ названия для сопоставления: без латыни в скобках, но с русскими уточнениями —
+// «Тернеция (Гло)» и «Тернеция ГЛО (Gymnocorymbus ternetzi 'GloFish')» → «тернеция гло»
+function gaNameKey(n) {
+  return String(n == null ? '' : n).toLowerCase().replace(/ё/g, 'е')
+    .replace(/\(([^)]*)\)/g, function(m, inner) { return /[a-z]/i.test(inner) ? ' ' : ' ' + inner + ' '; })
+    .replace(/[^a-zа-я0-9]+/g, ' ').trim();
+}
+// id карточки по названию: точное / без скобок (gaFindCard), иначе по ключу gaNameKey — только если совпадение одно
+function gaStockResolveId(name) {
+  var c = (typeof gaFindCard === 'function') ? gaFindCard(null, name) : null;
+  if (c && c.id != null && c.id > 0) return c.id;
+  var k = gaNameKey(name); if (!k) return null;
+  var list = (typeof FISH !== 'undefined' && Array.isArray(FISH)) ? FISH : [], hit = null, cnt = 0;
+  for (var i = 0; i < list.length; i++) {
+    var f = list[i]; if (!f || !(f.id > 0)) continue;
+    if (gaNameKey(f.name) === k) { hit = f.id; cnt++; }
+  }
+  return cnt === 1 ? hit : null;
+}
 // Get stock summary: { fishName: { incoming, sold, remaining } }
 function calcStockSummary(invoices, orders) {
   var summary = {}; // { name: { incoming, sold, invoiceDate } }
@@ -3765,6 +3784,9 @@ function calcStockSummary(invoices, orders) {
   var _byId = {}, _merged = {};
   Object.keys(summary).forEach(function(nm){
     var e = summary[nm]; var fid = (e && e.fishId) || '';
+    // 26.10.2026: строка без id (старый инвойс со старым названием, напр. «Тернеция (Гло)») —
+    // ищем карточку по названию; объединяем только при однозначном совпадении
+    if (!fid && typeof gaStockResolveId === 'function') { var _rid = gaStockResolveId(nm); if (_rid != null) { fid = String(_rid); if (e) e.fishId = fid; } }
     if (!fid) { _merged[nm] = e; return; }
     if (!_byId[fid]) _byId[fid] = [];
     _byId[fid].push(nm);
@@ -6363,6 +6385,7 @@ function renderAdminStats() {
         var nm = String(it.fishName || it.name || "").trim().toLowerCase();
         var bp = parseFloat(it.buyPrice) || 0;
         if (nm && bp > 0) buyMap[nm] = bp;
+        if (bp > 0) { var _bid = (it.fishId != null && String(it.fishId) !== "") ? String(it.fishId) : ((typeof gaStockResolveId === "function") ? gaStockResolveId(it.fishName || it.name || "") : null); if (_bid != null) buyMap["#" + _bid] = bp; }
       });
     });
 
@@ -6411,11 +6434,15 @@ function renderAdminStats() {
         // Strip leading emoji/checkmarks (✅ ☑ ✓ and other non-letter chars)
         name = name.replace(/^[\s\u2000-\u3300\uD800-\uDFFF\u2600-\u27BF\uFE00-\uFEFF]+/g, '').trim();
         if (!name) return;
+        // 26.10.2026: старое и новое название одной рыбки — одна строка (текущее название карточки)
+        var _rid2 = (typeof gaStockResolveId === 'function') ? gaStockResolveId(name) : null;
+        var _bpName = buyMap[name.toLowerCase()] || (_rid2 != null ? buyMap["#" + _rid2] : 0) || 0;
+        if (_rid2 != null) { for (var _fi = 0; _fi < FISH.length; _fi++) { if (FISH[_fi] && FISH[_fi].id === _rid2) { name = gaShortName(FISH[_fi].name); break; } } }
         if (!itemCounts[name]) itemCounts[name] = { qty:0, revenue:0 };
         itemCounts[name].qty += qty;
         itemCounts[name].revenue += rev;
         revParsed += rev;
-        var _bp = buyMap[name.toLowerCase()];
+        var _bp = _bpName;
         if (_bp > 0) {
           costTotal += _bp * qty; revKnown += rev;
           if (_dk && byDay[_dk]) { byDay[_dk].cost += _bp * qty; byDay[_dk].revKnown += rev; }
