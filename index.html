@@ -347,6 +347,11 @@ main{position:relative;z-index:5}
 .adm-head{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(79,195,247,.12);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#0d1c30;z-index:1}
 .adm-head h2{font-size:17px;font-weight:500;color:#ffd54f}
 .adm-body{padding:1.25rem;flex:1}
+@media(min-width:761px){
+  .adm-mask.ga-wide{justify-content:center;align-items:center;padding:2vh 2vw}
+  .adm-mask.ga-wide .adm-panel{width:min(1200px,96vw);height:94vh;border:1px solid rgba(79,195,247,.25);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .adm-mask.ga-wide .adm-head{border-radius:16px 16px 0 0}
+}
 .no-clients{color:#7a9bbf;font-size:13px;text-align:center;padding:2rem}
 
 /* ========== MOBILE: 2 columns grid + swipe categories ========== */
@@ -4357,6 +4362,7 @@ function openEditInvoiceModal(id) {
       return (a.name||'').localeCompare(b.name||'', 'ru');
     });
     allFish.forEach(function(f) {
+      if (!f || !(f.id > 0)) return;   // 28.10.2026: готовые наборы (id < 0) — не товар склада
       fishOpts += '<option value="' + f.id + '" data-name="' + (f.name||'').replace(/"/g,'') + '">' + (f.name||'') + '</option>';
     });
 
@@ -4381,11 +4387,11 @@ function openEditInvoiceModal(id) {
       + '<p style="font-size:11px;color:#7a9bbf;margin-bottom:12px">Измените дату, позиции или примечание</p>'
       + '<div id="inv-lines"></div>'
       + '<div style="display:flex;gap:8px;margin-bottom:8px">'
-      + '<select id="inv-fish-sel" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif">' + fishOpts + '</select>'
+      + '<select id="inv-fish-sel" style="flex:1;min-width:0;width:100%;max-width:100%;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif">' + fishOpts + '</select>'
       + '</div>'
       + '<div style="display:flex;gap:8px;margin-bottom:14px">'
-      + '<input id="inv-qty" type="number" min="1" value="1" placeholder="Кол-во" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
-      + '<input id="inv-buy-price" type="number" min="0" value="" placeholder="Вход. цена MDL" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,213,79,.2);background:#0d1c30;color:#ffd54f;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
+      + '<input id="inv-qty" type="number" min="1" value="1" placeholder="Кол-во" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
+      + '<input id="inv-buy-price" type="number" min="0" value="" placeholder="Вход. цена MDL" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(255,213,79,.2);background:#0d1c30;color:#ffd54f;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
       + '<button onclick="invAddLine()" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(129,199,132,.35);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-size:14px;font-weight:700;font-family:DM Sans,sans-serif">+</button>'
       + '</div>'
       + '<div style="margin-bottom:10px">'
@@ -4432,7 +4438,7 @@ function invUpdate(id) {
 function openInventoryModal() {
   var ex = document.getElementById("inventory-modal");
   if (ex) ex.remove();
-  var allFish = (typeof FISH !== "undefined" ? FISH : []).slice()
+  var allFish = (typeof FISH !== "undefined" ? FISH : []).filter(function(f){ return f && f.id > 0; })   // без готовых наборов
     .sort(function(a,b){ return (a.name||"").localeCompare(b.name||"","ru"); });
   var rows = allFish.map(function(f) {
     var out = typeof isOutOfStock === "function" && isOutOfStock(f.id);
@@ -4560,6 +4566,7 @@ function openAddInvoiceModal() {
     return (a.name||'').localeCompare(b.name||'', 'ru');
   });
   allFish.forEach(function(f) {
+    if (!f || !(f.id > 0)) return;   // 28.10.2026: готовые наборы (id < 0) — не товар склада
     fishOpts += '<option value="' + f.id + '" data-name="' + (f.name||'').replace(/"/g,'') + '">' + (f.name||'') + '</option>';
   });
 
@@ -4572,11 +4579,11 @@ function openAddInvoiceModal() {
     + '<p style="font-size:11px;color:#7a9bbf;margin-bottom:12px">Добавьте позиции которые пришли на склад</p>'
     + '<div id="inv-lines"></div>'
     + '<div style="display:flex;gap:8px;margin-bottom:8px">'
-    + '<select id="inv-fish-sel" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif">' + fishOpts + '</select>'
+    + '<select id="inv-fish-sel" style="flex:1;min-width:0;width:100%;max-width:100%;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif">' + fishOpts + '</select>'
     + '</div>'
     + '<div style="display:flex;gap:8px;margin-bottom:8px">'
-    + '<input id="inv-qty" type="number" min="1" value="1" placeholder="Кол-во" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
-    + '<input id="inv-buy-price" type="number" min="0" value="" placeholder="Вход. цена MDL" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,213,79,.2);background:#0d1c30;color:#ffd54f;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
+    + '<input id="inv-qty" type="number" min="1" value="1" placeholder="Кол-во" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(79,195,247,.2);background:#0d1c30;color:#e8f4fd;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
+    + '<input id="inv-buy-price" type="number" min="0" value="" placeholder="Вход. цена MDL" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(255,213,79,.2);background:#0d1c30;color:#ffd54f;font-size:13px;font-family:DM Sans,sans-serif;text-align:center">'
     + '<button onclick="invAddLine()" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(129,199,132,.35);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-size:14px;font-weight:700;font-family:DM Sans,sans-serif">+</button>'
     + '</div>'
     + '<div style="margin-bottom:10px">'
@@ -7603,6 +7610,9 @@ admTab = function(tab) {
   if (tab === "gifts") renderGiftsPanel();
   if (tab === "photo") renderAdminStats();
   if (tab === "stock") renderStockPanel();
+  // 28.10.2026: «Склад» и «Статистика» на ПК открываются большим окном по центру, остальные вкладки — боковой панелью
+  var _am = document.getElementById("adm-mask");
+  if (_am) _am.classList.toggle("ga-wide", tab === "stock" || tab === "photo");
 };
 
 // ============================================================
