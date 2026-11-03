@@ -13894,9 +13894,9 @@ function gaPhotoMigrateAll() {
     var flush = function() {
       if (!batch.length) return Promise.resolve();
       var part = batch; batch = [];
-      return gaPhotoCall(part.map(function(x) { return { name: x.name, dataUrl: x.data }; }), { commit: false }).then(function(j) {
+      // 03.11.2026: каждая пачка сразу сохраняется на сайте своим коммитом (один общий коммит в конце GitHub отклонял)
+      return gaPhotoCall(part.map(function(x) { return { name: x.name, dataUrl: x.data }; })).then(function(j) {
         part.forEach(function(x, i) { done.push({ id: x.id, old: x.old, extra: x.extra, path: j.paths[i] }); });
-        if (Array.isArray(j.blobs)) blobs = blobs.concat(j.blobs);
       }).catch(function(e) { failed += part.length; E("Загрузка пачки не удалась: " + e.message); });
     };
     var step = function() {
@@ -13910,18 +13910,15 @@ function gaPhotoMigrateAll() {
         .then(function() {
           T("Сжато и загружено: <b>" + (done.length + batch.length) + "</b> из " + list.length + (failed ? " · ошибок: " + failed : ""));
           B(idx / list.length * 0.85);
-          return batch.length >= 8 ? flush() : null;
+          return batch.length >= 12 ? flush() : null;
         }).then(step);
     };
     return step().then(function() {
       if (stop) return;
       if (!done.length) { T("Ни одно фото не перенесено. Ошибок: " + failed); return; }
-      T("Загружено <b>" + done.length + "</b> фото. Сохраняю на сайте одним обновлением…");
-      return gaPhotoCall([], { commit: true, blobs: blobs }).then(function() {
-      T("Загружено <b>" + done.length + "</b> фото. Жду, пока сайт опубликует их (~1–2 мин)…");
+      T("Загружено <b>" + done.length + "</b> фото. Жду, пока сайт опубликует их (~1–3 мин)…");
       B(0.9);
-      return gaWaitLive(done[done.length - 1].path, 480000);
-      }).then(function(live) {
+      return gaWaitLive(done[done.length - 1].path, 600000).then(function(live) {
         if (!live) { T("Сайт ещё не опубликовал фото. Ссылки не менял — нажмите кнопку переноса ещё раз через пару минут (повторно файлы не дублируются)."); return; }
         return gaPhotoSetDocs(done).then(function() {
           B(1);
