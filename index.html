@@ -13773,10 +13773,15 @@ function gaToWebp(src, max) {
       im.src = url;
     };
     if (/^data:image\//.test(String(src))) { draw(src, false); return; }
-    fetch(src, { mode: "cors", cache: "no-store" })
-      .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
-      .then(function(b) { draw(URL.createObjectURL(b), true); })
-      .catch(rej);
+    // 03.11.2026: imgbb иногда не отвечает — до 4 попыток с паузой (2, 5, 10 с)
+    var waits = [0, 2000, 5000, 10000], n = 0;
+    var tryOnce = function() {
+      fetch(src, { mode: "cors", cache: "no-store" })
+        .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
+        .then(function(b) { draw(URL.createObjectURL(b), true); })
+        .catch(function(e) { n++; if (n < waits.length) setTimeout(tryOnce, waits[n]); else rej(e); });
+    };
+    tryOnce();
   });
 }
 // files: [{name, dataUrl}]; opt.commit === false — только загрузить (вернёт blobs), opt.blobs — ранее загруженные
