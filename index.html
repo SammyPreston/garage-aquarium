@@ -1877,6 +1877,9 @@ body.ga-has-mbar .toast.show{transform:translateX(-50%) translateY(0)}
 @media(min-width:1101px) and (max-width:1359px){html:not([lang="ro"]) .ga-nav .ga-nav-order .l{display:none}html:not([lang="ro"]) .ga-nav .ga-nav-order .s{display:inline}}
 @media(min-width:861px) and (max-width:999px){.ga-nav .ga-nav-order .l{display:none}.ga-nav .ga-nav-order .s{display:inline}}
 @media(min-width:1101px) and (max-width:1309px){html[lang="ro"] .ga-nav .ga-nav-order .l{display:none}html[lang="ro"] .ga-nav .ga-nav-order .s{display:inline}}
+/* 03.11.2026: фото не загрузилось — аккуратная заглушка вместо пустого квадрата */
+.cimg img.ga-img-broken{visibility:hidden}
+.cimg:has(img.ga-img-broken)::after{content:"\1F420";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,#123543,#0B1A22);pointer-events:none}
 /* ══ ЭТАП 7 (20.10.2026): кабинет — вход через Google, блок постоянного клиента над баннером ══ */
 .ga-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:12px;border:1px solid #1E3F4D;background:#fff;color:#1f1f1f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0 6px}
 .ga-gbtn:hover{background:#f2f5f7}
@@ -6129,6 +6132,7 @@ function accOvClick(e){ if(e.target===document.getElementById("acc-mask")) docum
       </div>
       <div id="apanel-clients">
         <button onclick="openAddFishPanel()" style="width:100%;padding:9px;border-radius:8px;border:1px solid rgba(79,195,247,.3);background:rgba(79,195,247,.08);color:#4fc3f7;font-size:13px;font-family:DM Sans,sans-serif;cursor:pointer;margin-bottom:12px;font-weight:500">+ Add New Fish Card</button>
+        <button onclick="gaPhotoMigrateAll()" title="Скопировать все фото карточек с imgbb на сам сайт (быстрее и надёжнее)" style="width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,213,79,.3);background:rgba(255,213,79,.07);color:#ffd54f;font-size:13px;font-family:DM Sans,sans-serif;cursor:pointer;margin-bottom:12px;font-weight:500">&#128444; Перенести фото с imgbb на сайт</button>
         <p style="font-size:12px;color:#7a9bbf;margin-bottom:1rem">Set wholesale discounts for registered clients. Price shown on their screen will be reduced automatically.</p>
         <div id="clients-tbl-wrap"></div>
       </div>
@@ -7829,6 +7833,8 @@ function loadFirebasePhotos() {
       var src = doc.data().src;
       if (!src) return;
       IMGS[id] = src;
+      // 03.11.2026: фото переехало на сайт — старый адрес (imgbb) держим запасным
+      if (doc.data().srcOld) { window.GA_IMG_OLD = window.GA_IMG_OLD || {}; window.GA_IMG_OLD[id] = doc.data().srcOld; }
       var cimg = document.querySelector("#card" + id + " .cimg");
       if (!cimg) return;
       var imgEl = cimg.querySelector("img");
@@ -8569,6 +8575,7 @@ function submitNewCard() {
     fbDb.collection("photos").doc(String(newId)).set({
       src: img, updatedAt: new Date().toISOString()
     }).catch(function(){});
+    if (typeof gaPhotoToSite === "function") gaPhotoToSite(newId, img, false, true); // 03.11.2026: копия фото на сайт
   }
 
   // Close admin panel, reset filter to show new card
@@ -11395,10 +11402,11 @@ function gaPriceList() {
     var nm = (typeof gaNoLatin === 'function') ? gaNoLatin(full) : String(full).split(' (')[0];
     var imgEl = document.querySelector('#card' + key + ' .cimg img');
     if (!cats[cat]) cats[cat] = [];
+    var _imgAbs = imgEl ? (imgEl.src || '') : '';
     cats[cat].push({ name: nm, lat: mLat ? mLat[1] : '', base: base, sale: sale, disc: disc,
                      opt: Math.min(Math.round(base * 0.8), sale), qty: qty,
                      isNew: _cl.indexOf('Новинки') >= 0,
-                     img: imgEl ? (imgEl.getAttribute('src') || '') : '' });
+                     img: _imgAbs });
     total++;
   }
   if (!total) { if (typeof showToast === 'function') showToast(T('Нет позиций в наличии', 'Nu sunt poziții în stoc')); return; }
@@ -13737,6 +13745,210 @@ function gaUnitHtml(line, ro) {
   var p = gaUnitParse(line);
   return p ? (gaNoLatin(p.name) + ' - <span style="white-space:nowrap">' + gaUnitStr(p, ro) + '</span>') : gaNoLatin(line);
 }
+
+// ===== 03.11.2026: фото карточек хранятся на самом сайте (/img/cards), а не на imgbb =====
+// Фото сжимается в браузере в WebP (до 900 px), функция photo-save кладёт его в репозиторий,
+// Netlify публикует (~1 мин) — после этого ссылка в базе меняется на /img/cards/…; старая (imgbb) остаётся запасной.
+window.GA_IMG_OLD = window.GA_IMG_OLD || {};
+function gaIsAdminUser() {
+  try { return !!(fbAuth && fbAuth.currentUser && String(fbAuth.currentUser.email).toLowerCase() === "admin@garageaquarium.shop"); } catch (e) { return false; }
+}
+function gaHash(t) { var h = 5381; t = String(t); for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0; return h.toString(36); }
+function gaToWebp(src, max) {
+  return new Promise(function(res, rej) {
+    var draw = function(url, revoke) {
+      var im = new Image();
+      im.onload = function() {
+        var w = im.naturalWidth, h = im.naturalHeight;
+        if (revoke) URL.revokeObjectURL(url);
+        if (!w || !h) { rej(new Error("пустое фото")); return; }
+        var k = Math.min(1, max / Math.max(w, h)), c = document.createElement("canvas");
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        var d = c.toDataURL("image/webp", 0.82);
+        if (d.indexOf("data:image/webp") !== 0) d = c.toDataURL("image/jpeg", 0.85);
+        res(d);
+      };
+      im.onerror = function() { if (revoke) URL.revokeObjectURL(url); rej(new Error("фото не открылось")); };
+      im.src = url;
+    };
+    if (/^data:image\//.test(String(src))) { draw(src, false); return; }
+    fetch(src, { mode: "cors", cache: "no-store" })
+      .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
+      .then(function(b) { draw(URL.createObjectURL(b), true); })
+      .catch(rej);
+  });
+}
+// files: [{name, dataUrl}]; opt.commit === false — только загрузить (вернёт blobs), opt.blobs — ранее загруженные
+function gaPhotoCall(files, opt) {
+  opt = opt || {};
+  if (!gaIsAdminUser()) return Promise.reject(new Error("нужен вход админа"));
+  return fbAuth.currentUser.getIdToken().then(function(tok) {
+    return fetch("/.netlify/functions/photo-save", {
+      method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok },
+      body: JSON.stringify({ commit: opt.commit !== false, blobs: Array.isArray(opt.blobs) ? opt.blobs : [],
+        files: (files || []).map(function(f) { return { name: f.name, data: String(f.dataUrl).split(",")[1] || "" }; }) })
+    });
+  }).then(function(r) { return r.json().catch(function() { return { ok: false, error: "HTTP " + r.status }; }); })
+    .then(function(j) { if (!j || !j.ok || !Array.isArray(j.paths)) throw new Error((j && j.error) || "ошибка загрузки"); return j; });
+}
+function gaPhotoUpload(files) { return gaPhotoCall(files).then(function(j) { return j.paths; }); }
+// ждём, пока Netlify опубликует файл
+function gaWaitLive(path, maxMs) {
+  var t0 = Date.now();
+  return new Promise(function(res) {
+    var again = function() { if (Date.now() - t0 > maxMs) res(false); else setTimeout(tick, 8000); };
+    var tick = function() {
+      fetch(path + "?v=" + Date.now(), { method: "HEAD", cache: "no-store" })
+        .then(function(r) { if (r.ok) res(true); else again(); }).catch(again);
+    };
+    tick();
+  });
+}
+// после публикации: ссылка в базе → /img/cards/…, старая — в srcOld (запасная)
+function gaPhotoSetDocs(list) {
+  var now = new Date().toISOString(), jobs = [];
+  for (var i = 0; i < list.length; i += 400) {
+    var b = fbDb.batch();
+    list.slice(i, i + 400).forEach(function(x) {
+      var keepOld = /^https?:/.test(String(x.old)) ? x.old : "";
+      b.set(fbDb.collection("photos").doc(String(x.id)), { src: x.path, srcOld: keepOld, movedAt: now, updatedAt: now }, { merge: true });
+    });
+    jobs.push(b.commit());
+  }
+  list.forEach(function(x) {
+    var keepOld = /^https?:/.test(String(x.old)) ? x.old : "";
+    if (x.extra !== false) jobs.push(fbDb.collection("extra_cards").doc(String(x.id)).update({ img: x.path }).catch(function() {}));
+    IMGS[String(x.id)] = x.path;
+    if (keepOld) GA_IMG_OLD[String(x.id)] = keepOld;
+    var im = document.querySelector("#card" + x.id + " .cimg img");
+    if (im) { im.removeAttribute("data-ga-try"); im.classList.remove("ga-img-broken"); im.src = x.path; }
+  });
+  return Promise.all(jobs);
+}
+// одна карточка (смена фото / новая карточка)
+function gaPhotoToSite(id, src, quiet, isNew) {
+  if (!gaIsAdminUser() || !src || !fbDb || /^\/img\//.test(String(src))) return Promise.resolve(null);
+  var name = String(id).replace(/[^0-9a-z_-]/gi, "") + "-" + gaHash(src) + ".webp";
+  var say = function(t) { if (!quiet) showToast(t); };
+  return gaToWebp(src, 900)
+    .then(function(d) { return gaPhotoUpload([{ name: name, dataUrl: d }]); })
+    .then(function(paths) {
+      var p = paths[0];
+      say("Фото загружено на сайт, публикуется (~1 мин)…");
+      return gaWaitLive(p, 300000).then(function(live) {
+        if (!live) { say("Фото ещё не опубликовалось — пока остаётся прежняя ссылка"); return null; }
+        return gaPhotoSetDocs([{ id: id, old: src, path: p }]).then(function() { say("✅ Фото теперь хранится на сайте"); return p; });
+      });
+    })
+    .catch(function(e) { say("Фото не перенесено на сайт: " + e.message); return null; });
+}
+// смена фото в карточке: сначала как раньше, потом копия на сайт
+(function() {
+  if (typeof mSave !== "function") return;
+  var _prev = mSave;
+  mSave = function() {
+    var id = (typeof aId !== "undefined") ? aId : null;
+    var murl = document.getElementById("murl");
+    var src = (typeof aSrc !== "undefined" && aSrc) ? aSrc : (murl ? murl.value.trim() : "");
+    var r = _prev.apply(this, arguments);
+    if (id != null && src) gaPhotoToSite(id, src);
+    return r;
+  };
+  window.mSave = mSave;
+})();
+// перенос всех фото с imgbb (и фото, сохранённых прямо в базе) на сайт — одной кнопкой в админке
+function gaPhotoMigrateAll() {
+  if (!gaIsAdminUser() || !fbDb) { showToast("Войдите как админ"); return; }
+  var ov = document.getElementById("ga-mig");
+  if (ov) ov.remove();
+  ov = document.createElement("div");
+  ov.id = "ga-mig";
+  ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px";
+  ov.innerHTML = '<div style="background:#111e33;border:1px solid rgba(255,213,79,.35);border-radius:16px;width:100%;max-width:460px;padding:18px;color:#e8f4fd;font-family:DM Sans,sans-serif">'
+    + '<div style="font-size:15px;font-weight:700;color:#ffd54f;margin-bottom:8px">&#128444; Перенос фото на сайт</div>'
+    + '<div id="ga-mig-t" style="font-size:13px;line-height:1.5;color:#C9DDE3">Ищу фото…</div>'
+    + '<div style="height:8px;background:#0d1c30;border-radius:100px;overflow:hidden;margin:12px 0"><i id="ga-mig-b" style="display:block;height:100%;width:0;background:linear-gradient(90deg,#2EE6C5,#ffd54f)"></i></div>'
+    + '<div id="ga-mig-e" style="font-size:11px;color:#ff8a80;max-height:120px;overflow:auto"></div>'
+    + '<button id="ga-mig-x" style="margin-top:10px;width:100%;padding:9px;border-radius:8px;border:1px solid rgba(79,195,247,.25);background:none;color:#7a9bbf;cursor:pointer;font-family:DM Sans,sans-serif">Закрыть</button></div>';
+  document.body.appendChild(ov);
+  var stop = false;
+  document.getElementById("ga-mig-x").onclick = function() { stop = true; ov.remove(); };
+  var T = function(t) { var e = document.getElementById("ga-mig-t"); if (e) e.innerHTML = t; };
+  var B = function(p) { var e = document.getElementById("ga-mig-b"); if (e) e.style.width = Math.round(p * 100) + "%"; };
+  var E = function(t) { var e = document.getElementById("ga-mig-e"); if (e) e.innerHTML += "<div>• " + t + "</div>"; };
+  var need = function(u) { u = String(u || ""); return /^data:image\//.test(u) || /ibb\.co/i.test(u); };
+  Promise.all([fbDb.collection("photos").get(), fbDb.collection("extra_cards").get()]).then(function(r) {
+    var items = {}, extra = {};
+    r[1].forEach(function(d) { extra[d.id] = true; var x = d.data() || {}; if (need(x.img)) items[d.id] = { id: d.id, old: x.img }; });
+    r[0].forEach(function(d) { var x = d.data() || {}; if (need(x.src)) items[d.id] = { id: d.id, old: x.src }; });
+    var list = Object.keys(items).map(function(k) { var it = items[k]; it.extra = !!extra[k]; return it; });
+    if (!list.length) { T("✅ Все фото уже на сайте — переносить нечего."); B(1); return; }
+    T("Найдено фото: <b>" + list.length + "</b>. Сжимаю и загружаю на сайт…<br><small>Не закрывайте вкладку. Займёт несколько минут.</small>");
+    var done = [], blobs = [], failed = 0, idx = 0, conv = 0, batch = [];
+    var flush = function() {
+      if (!batch.length) return Promise.resolve();
+      var part = batch; batch = [];
+      return gaPhotoCall(part.map(function(x) { return { name: x.name, dataUrl: x.data }; }), { commit: false }).then(function(j) {
+        part.forEach(function(x, i) { done.push({ id: x.id, old: x.old, extra: x.extra, path: j.paths[i] }); });
+        if (Array.isArray(j.blobs)) blobs = blobs.concat(j.blobs);
+      }).catch(function(e) { failed += part.length; E("Загрузка пачки не удалась: " + e.message); });
+    };
+    var step = function() {
+      if (stop) return Promise.resolve();
+      if (idx >= list.length) return flush();
+      var it = list[idx++];
+      return gaToWebp(it.old, 900).then(function(d) {
+        conv++;
+        batch.push({ id: it.id, old: it.old, extra: it.extra, data: d, name: String(it.id).replace(/[^0-9a-z_-]/gi, "") + "-" + gaHash(it.old) + ".webp" });
+      }).catch(function(e) { failed++; E("Карточка " + it.id + ": " + e.message); })
+        .then(function() {
+          T("Сжато и загружено: <b>" + (done.length + batch.length) + "</b> из " + list.length + (failed ? " · ошибок: " + failed : ""));
+          B(idx / list.length * 0.85);
+          return batch.length >= 8 ? flush() : null;
+        }).then(step);
+    };
+    return step().then(function() {
+      if (stop) return;
+      if (!done.length) { T("Ни одно фото не перенесено. Ошибок: " + failed); return; }
+      T("Загружено <b>" + done.length + "</b> фото. Сохраняю на сайте одним обновлением…");
+      return gaPhotoCall([], { commit: true, blobs: blobs }).then(function() {
+      T("Загружено <b>" + done.length + "</b> фото. Жду, пока сайт опубликует их (~1–2 мин)…");
+      B(0.9);
+      return gaWaitLive(done[done.length - 1].path, 480000);
+      }).then(function(live) {
+        if (!live) { T("Сайт ещё не опубликовал фото. Ссылки не менял — нажмите кнопку переноса ещё раз через пару минут (повторно файлы не дублируются)."); return; }
+        return gaPhotoSetDocs(done).then(function() {
+          B(1);
+          T("✅ Готово: на сайт перенесено <b>" + done.length + "</b> фото" + (failed ? ", не удалось: <b>" + failed + "</b> (список ниже — у них остались старые ссылки)" : "") + ".<br><small>Старые адреса imgbb сохранены запасными.</small>");
+        });
+      });
+    });
+  }).catch(function(e) { T("Ошибка: " + e.message); });
+}
+// фото не загрузилось: ещё одна попытка → запасной старый адрес → заглушка вместо пустого квадрата
+document.addEventListener("error", function(e) {
+  var t = e.target;
+  if (!t || t.tagName !== "IMG") return;
+  var card = t.closest ? t.closest('[id^="card"]') : null;
+  if (!card || !t.closest(".cimg")) return;
+  var src = t.getAttribute("src") || "";
+  if (!/^(https?:|\/)/.test(src)) return;
+  var st = t.getAttribute("data-ga-try") || "0";
+  if (st === "0") {
+    t.setAttribute("data-ga-try", "1");
+    setTimeout(function() { t.src = src.split("#")[0] + (src.indexOf("?") < 0 ? "?" : "&") + "r=" + Date.now(); }, 2500);
+    return;
+  }
+  var old = (window.GA_IMG_OLD || {})[card.id.replace(/^card/, "")];
+  if (st === "1" && old && src.indexOf(old) !== 0) { t.setAttribute("data-ga-try", "2"); t.src = old; return; }
+  t.setAttribute("data-ga-try", "ph");
+  t.classList.add("ga-img-broken");
+}, true);
+document.addEventListener("load", function(e) {
+  var t = e.target;
+  if (t && t.tagName === "IMG" && t.classList && t.classList.contains("ga-img-broken")) { t.classList.remove("ga-img-broken"); t.removeAttribute("data-ga-try"); }
+}, true);
 
 // ===== запуск =====
 gaPacksSet(GA_PACKS_DEFAULT);
